@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.1.1 (2026-02-15)
+
+### Bug Fixes
+
+- Address template review findings across CI, linting, and tests
+  ([`04cfa29`](https://github.com/michaelellis003/uv-python-template/commit/04cfa29032a00a3065e38c18898bdb715dc52b39))
+
+### Continuous Integration
+
+- **dependabot**: Add auto-merge workflow for minor/patch updates
+  ([`b8966e0`](https://github.com/michaelellis003/uv-python-template/commit/b8966e0f240de87a599dce7d5716a94328dc7eb9))
+
+
 ## v1.1.0 (2026-02-15)
 
 ### Chores
