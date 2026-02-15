@@ -2,6 +2,29 @@
 
 <!-- version list -->
 
+## v1.1.2 (2026-02-15)
+
+### Bug Fixes
+
+- Address review findings across template
+  ([`ba5c88b`](https://github.com/michaelellis003/uv-python-template/commit/ba5c88b327acf3bf5f4b0959fe2d897ee7636dd1))
+
+### Chores
+
+- Add setup-repo.sh for one-time branch protection config
+  ([`09e58ba`](https://github.com/michaelellis003/uv-python-template/commit/09e58ba3f378607a3e89a4bccd06509be2f60a4d))
+
+### Continuous Integration
+
+- **deps**: Bump actions/checkout from 4 to 6
+  ([`7c800f3`](https://github.com/michaelellis003/uv-python-template/commit/7c800f30771dc244138e5e024516e994135f31f0))
+
+### Documentation
+
+- Add branch protection setup note for Dependabot auto-merge
+  ([`d3a3ece`](https://github.com/michaelellis003/uv-python-template/commit/d3a3ece862b3d661fd119f6db89dd420fafe1977))
+
+
 ## v1.1.1 (2026-02-15)
 
 ### Bug Fixes
