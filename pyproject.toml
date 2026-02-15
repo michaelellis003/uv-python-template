@@ -18,6 +18,7 @@ dev = [
     "pytest-cov>=6.0.0",
     "pre-commit>=4.1.0",
     "python-semantic-release>=10.2.0",
+    "ruff>=0.9.7",
 ]
 
 [build-system]
