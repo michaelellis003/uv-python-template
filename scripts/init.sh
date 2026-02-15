@@ -266,20 +266,70 @@ info "Cleaning up TODO comments..."
 sedi '/# TODO: Update the --upgrade-package/d' pyproject.toml
 
 # ---------------------------------------------------------------------------
-# 8. Update the README "Customizing the Template" section
+# 8. Update README structure and hints
 # ---------------------------------------------------------------------------
 
-info "Updating README template instructions..."
-
-# Replace "my-project" in the clone command (URL was already updated above)
-sedi "s|\.git my-project|.git ${KEBAB_NAME}|" README.md
+info "Updating README..."
 
 # Update project structure section — remove "(rename this)" hint
 # (package name was already updated by the global replacement above)
 sedi "s|# Package source (rename this)|# Package source|" README.md
 
 # ---------------------------------------------------------------------------
-# 9. Regenerate the lockfile
+# 9. Strip template-only content from README
+# ---------------------------------------------------------------------------
+
+info "Stripping template-only sections from README..."
+
+# Replace the template-specific Getting Started + Customizing sections
+# (enclosed in TEMPLATE-ONLY markers) with a project-appropriate version.
+awk -v repo="${GITHUB_REPO}" -v name="${KEBAB_NAME}" '
+/<!-- TEMPLATE-ONLY-START -->/ {
+    skip = 1
+    print "## Getting Started"
+    print ""
+    print "### Prerequisites"
+    print "- Python 3.10+"
+    print "- [uv](https://docs.astral.sh/uv/getting-started/installation/)"
+    print ""
+    print "### Installation"
+    print ""
+    print "```bash"
+    printf "git clone https://github.com/%s.git\n", repo
+    printf "cd %s\n", name
+    print "uv sync"
+    print "```"
+    print ""
+    print "### Running Tests"
+    print ""
+    print "```bash"
+    print "uv run pytest -v --cov"
+    print "```"
+    print ""
+    print "### Pre-commit Hooks"
+    print ""
+    print "```bash"
+    print "uv run pre-commit install"
+    print "```"
+    next
+}
+/<!-- TEMPLATE-ONLY-END -->/ { skip = 0; next }
+!skip { print }
+' README.md > README.md.tmp && mv README.md.tmp README.md
+
+# Remove "Customizing the Template" from Table of Contents
+sedi '/Customizing the Template/d' README.md
+
+# Renumber the Table of Contents entries
+awk '/^[0-9]+\. \[/ { n++; sub(/^[0-9]+/, n) } { print }' \
+    README.md > README.md.tmp && mv README.md.tmp README.md
+
+# Remove init.sh from project structure diagrams
+sedi '/init\.sh.*Interactive template/d' README.md
+sedi '/init\.sh.*Interactive project/d' CLAUDE.md
+
+# ---------------------------------------------------------------------------
+# 10. Regenerate the lockfile
 # ---------------------------------------------------------------------------
 
 info "Regenerating uv.lock..."
@@ -292,7 +342,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 10. Summary
+# 11. Self-cleanup
+# ---------------------------------------------------------------------------
+
+info "Removing init script (no longer needed)..."
+rm -f -- "$0"
+
+# ---------------------------------------------------------------------------
+# 12. Summary
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -311,7 +368,4 @@ echo "  4. Enable pre-commit:   uv run pre-commit install"
 echo "  5. Replace the demo code in ${SNAKE_NAME}/main.py"
 echo "  6. Set up Codecov and add the badge to README.md"
 echo "  7. Push and run:        ./scripts/setup-repo.sh"
-echo ""
-echo "You can safely delete this script after initialization:"
-echo "  rm scripts/init.sh"
 echo ""

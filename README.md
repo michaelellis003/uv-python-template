@@ -27,6 +27,7 @@ A production-ready template for starting new Python packages. Clone it, rename a
 - **GitHub Actions** CI/CD — lint, test across Python 3.10–3.13, and auto-release on merge to main.
 - **TDD-first development lifecycle** with Claude Code configuration for AI-assisted development.
 
+<!-- TEMPLATE-ONLY-START -->
 ## Getting Started
 
 ### Prerequisites
@@ -123,6 +124,7 @@ If you prefer to customize manually, update these references:
 </details>
 
 The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
+<!-- TEMPLATE-ONLY-END -->
 
 ## Development Workflow
 
