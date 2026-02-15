@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.2 (2026-02-15)
+
+### Bug Fixes
+
+- **ci**: Add gate job, timeouts, and harden config
+  ([`2f2cbb6`](https://github.com/michaelellis003/uv-python-template/commit/2f2cbb6faf906ae509eeffce990b7ba70893a9ee))
+
+
 ## v1.4.1 (2026-02-15)
 
 ### Bug Fixes
