@@ -12,7 +12,7 @@ fi
 
 PROTECTED_PATTERNS=(
     ".env"
-    "poetry.lock"
+    "uv.lock"
     ".git/"
 )
 

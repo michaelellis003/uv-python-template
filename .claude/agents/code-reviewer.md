@@ -38,9 +38,9 @@ TDD, Conventional Commits, and rigorous code quality standards.
 - No sensitive files (`.env`, credentials) staged
 
 ### Style Compliance
-- Run `poetry run ruff check .` and report any issues
-- Run `poetry run ruff format --check .` and report any issues
-- Run `poetry run pyright` and report any type errors
+- Run `uv run ruff check .` and report any issues
+- Run `uv run ruff format --check .` and report any issues
+- Run `uv run pyright` and report any type errors
 
 ## Output Format
 

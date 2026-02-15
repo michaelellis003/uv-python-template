@@ -13,32 +13,32 @@ Execute the full quality pipeline matching what CI runs.
 
 ### Step 1: Format Check
 ```bash
-poetry run ruff format --check .
+uv run ruff format --check .
 ```
 If formatting issues found, fix them:
 ```bash
-poetry run ruff format .
+uv run ruff format .
 ```
 
 ### Step 2: Lint Check
 ```bash
-poetry run ruff check .
+uv run ruff check .
 ```
 If lint issues found, attempt auto-fix:
 ```bash
-poetry run ruff check . --fix
+uv run ruff check . --fix
 ```
 Report any remaining issues that need manual fixes.
 
 ### Step 3: Type Check
 ```bash
-poetry run pyright
+uv run pyright
 ```
 Report any type errors found.
 
 ### Step 4: Run Tests
 ```bash
-poetry run pytest -v --durations=0 --cov
+uv run pytest -v --durations=0 --cov
 ```
 
 ### Step 5: Summary

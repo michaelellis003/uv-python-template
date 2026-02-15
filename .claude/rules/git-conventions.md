@@ -89,7 +89,7 @@ BREAKING CHANGE: X-API-Key header no longer accepted.
 
 - Push every 3-5 commits or at end of session
 - Run full quality suite before pushing:
-  `poetry run pre-commit run --all-files`
+  `uv run pre-commit run --all-files`
 - Rebase on main before pushing:
   `git fetch origin && git rebase origin/main`
 

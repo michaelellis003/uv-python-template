@@ -29,8 +29,8 @@ Identify:
 ### Step 2: Verify Quality
 Ensure all checks pass before opening the PR:
 ```bash
-poetry run pytest -v --durations=0 --cov
-poetry run pre-commit run --all-files
+uv run pytest -v --durations=0 --cov
+uv run pre-commit run --all-files
 ```
 
 ### Step 3: Check PR Size

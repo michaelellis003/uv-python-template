@@ -11,15 +11,17 @@ requires-python = ">=3.10" # Update this when changing .python-versions
 dependencies = [
 ]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pyright = "^1.1.394"
-pytest-cov = "^6.0.0"
-pre-commit = "^4.1.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pyright>=1.1.394",
+    "pytest-cov>=6.0.0",
+    "pre-commit>=4.1.0",
+]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 target-version = "py310" # Update this when changing .python-versions
@@ -88,4 +90,6 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.pyright]
-exclude = ["tests"]
+venvPath = "."
+venv = ".venv"
+exclude = ["tests", ".venv"]

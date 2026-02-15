@@ -27,7 +27,7 @@ Follow this exact sequence:
 - Include a Google-style docstring
 - Run the test and confirm it FAILS:
   ```bash
-  poetry run pytest tests/ -x --tb=short -v
+  uv run pytest tests/ -x --tb=short -v
   ```
 - If it passes, the behavior already exists — stop and inform the user
 
@@ -36,7 +36,7 @@ Follow this exact sequence:
 - Do not optimize or refactor yet
 - Run the test and confirm it PASSES:
   ```bash
-  poetry run pytest tests/ -x --tb=short -v
+  uv run pytest tests/ -x --tb=short -v
   ```
 
 ### Step 4: REFACTOR — Clean Up
@@ -44,17 +44,17 @@ Follow this exact sequence:
 - Ensure tests still pass after refactoring
 - Run the full test suite:
   ```bash
-  poetry run pytest -v --durations=0 --cov
+  uv run pytest -v --durations=0 --cov
   ```
 
 ### Step 5: Verify Quality
 - Run lint and format checks:
   ```bash
-  poetry run ruff check . --fix && poetry run ruff format .
+  uv run ruff check . --fix && uv run ruff format .
   ```
 - Run type checking:
   ```bash
-  poetry run pyright
+  uv run pyright
   ```
 
 ### Step 6: Report
