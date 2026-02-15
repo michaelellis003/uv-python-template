@@ -1,3 +1,6 @@
+from importlib.metadata import PackageNotFoundError
+from unittest.mock import patch
+
 from python_package_template import __version__
 
 
@@ -11,3 +14,20 @@ def test_public_api_exports_all_expected_names(package):
     """Test that __all__ contains exactly the expected public API."""
     expected = ['__version__', 'add', 'hello', 'multiply', 'subtract']
     assert sorted(package.__all__) == sorted(expected)
+
+
+def test_version_fallback_when_package_not_found():
+    """Test that __version__ falls back to '0.0.0' when not installed."""
+    import importlib
+
+    import python_package_template
+
+    with patch(
+        'importlib.metadata.version',
+        side_effect=PackageNotFoundError,
+    ):
+        importlib.reload(python_package_template)
+        assert python_package_template.__version__ == '0.0.0'
+
+    # Restore the real version
+    importlib.reload(python_package_template)

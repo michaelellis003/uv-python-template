@@ -31,9 +31,11 @@ uv run pytest tests/test_main.py::test_add_two_positive_integers_returns_sum -v
 
 ```
 tests/
+├── conftest.py               # Shared fixtures (when needed)
 ├── test_init.py              # Package-level export tests
-├── test_<module>.py          # One test file per source module
-└── conftest.py               # Shared fixtures (when needed)
+├── test_main.py              # Unit tests for demo functions
+├── test_main_module.py       # Tests for __main__.py entry point
+└── test_<module>.py          # One test file per source module
 ```
 
 Future growth pattern:
@@ -95,5 +97,5 @@ def test_refresh_token_with_valid_token_returns_new_pair():
 ## CI Test Matrix
 
 Tests run against Python 3.10, 3.11, 3.12, and 3.13 in CI.
-A macOS smoke test runs on the latest Python version.
+macOS and Windows smoke tests run on the latest Python version.
 Coverage reports are uploaded to Codecov.

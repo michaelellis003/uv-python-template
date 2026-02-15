@@ -4,8 +4,8 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pyright](https://img.shields.io/badge/Pyright-enabled-brightgreen)](https://github.com/microsoft/pyright)
-[![codecov](https://codecov.io/gh/michaelellis003/python-package-template/graph/badge.svg?token=TUKP19SKJ3)](https://codecov.io/gh/michaelellis003/python-package-template)
-[![License](https://img.shields.io/github/license/michaelellis003/python-package-template)](https://github.com/michaelellis003/python-package-template/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/michaelellis003/uv-python-template/graph/badge.svg?token=TUKP19SKJ3)](https://codecov.io/gh/michaelellis003/uv-python-template)
+[![License](https://img.shields.io/github/license/michaelellis003/uv-python-template)](https://github.com/michaelellis003/uv-python-template/blob/main/LICENSE)
 
 A production-ready template for starting new Python packages. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up.
 
@@ -47,7 +47,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 1. Click **"Use this template"** on GitHub (or clone the repo directly):
     ```bash
-    git clone https://github.com/michaelellis003/python-package-template.git my-project
+    git clone https://github.com/michaelellis003/uv-python-template.git my-project
     cd my-project
     rm -rf .git && git init
     ```
@@ -123,9 +123,6 @@ If you prefer to customize manually, update these references:
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
 | Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks |
-| `.claude/rules/` glob patterns | 4 files reference `python_package_template/**/*.py` |
-| `.claude/settings.json` | Update `Read(python_package_template/**)` permission |
-| `.claude/agents/test-writer.md` | Update import example |
 
 </details>
 
@@ -226,7 +223,8 @@ Runs parallel jobs for fast feedback:
 ├── tests/
 │   ├── conftest.py                 # Shared test fixtures
 │   ├── test_init.py                # Package-level tests
-│   └── test_main.py                # Unit tests for demo functions
+│   ├── test_main.py                # Unit tests for demo functions
+│   └── test_main_module.py         # Tests for __main__.py entry point
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
 │   ├── dependabot.yml              # Automated dependency updates

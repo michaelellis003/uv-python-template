@@ -365,6 +365,18 @@ sedi '/Customizing the Template/d' README.md
 sedi '/init\.sh.*Interactive template/d' README.md
 sedi '/init\.sh.*Interactive project/d' CLAUDE.md
 
+# Strip template-only content from CLAUDE.md
+awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" '
+/<!-- TEMPLATE-ONLY-START -->/ {
+    skip = 1
+    printf "**%s** — %s. Uses uv, Ruff, Pyright, and pre-commit\n", name, desc
+    print "hooks. Licensed Apache-2.0."
+    next
+}
+/<!-- TEMPLATE-ONLY-END -->/ { skip = 0; next }
+!skip { print }
+' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
+
 # ---------------------------------------------------------------------------
 # 10. Regenerate the lockfile
 # ---------------------------------------------------------------------------

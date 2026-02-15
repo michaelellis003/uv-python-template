@@ -10,17 +10,24 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
-PROTECTED_PATTERNS=(
-    ".env"
-    "uv.lock"
-    ".git/"
-)
+BASENAME=$(basename "$FILE_PATH")
 
-for pattern in "${PROTECTED_PATTERNS[@]}"; do
-    if [[ "$FILE_PATH" == *"$pattern"* ]]; then
-        echo "BLOCKED: $FILE_PATH is a protected file ('$pattern'). Do not edit directly." >&2
-        exit 2
-    fi
-done
+# Block .env files (exact match or .env.* like .env.local)
+if [[ "$BASENAME" == ".env" || "$BASENAME" == .env.* ]]; then
+    echo "BLOCKED: $FILE_PATH is a protected file ('.env'). Do not edit directly." >&2
+    exit 2
+fi
+
+# Block uv.lock
+if [[ "$BASENAME" == "uv.lock" ]]; then
+    echo "BLOCKED: $FILE_PATH is a protected file ('uv.lock'). Do not edit directly." >&2
+    exit 2
+fi
+
+# Block .git/ directory
+if [[ "$FILE_PATH" == *"/.git/"* || "$FILE_PATH" == .git/* ]]; then
+    echo "BLOCKED: $FILE_PATH is a protected file ('.git/'). Do not edit directly." >&2
+    exit 2
+fi
 
 exit 0

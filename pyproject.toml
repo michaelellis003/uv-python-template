@@ -29,9 +29,9 @@ dependencies = [
 # python-package-template = "python_package_template.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/michaelellis003/python-package-template"
-Repository = "https://github.com/michaelellis003/python-package-template"
-Issues = "https://github.com/michaelellis003/python-package-template/issues"
+Homepage = "https://github.com/michaelellis003/uv-python-template"
+Repository = "https://github.com/michaelellis003/uv-python-template"
+Issues = "https://github.com/michaelellis003/uv-python-template/issues"
 
 [dependency-groups]
 dev = [

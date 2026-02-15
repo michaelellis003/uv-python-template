@@ -5,6 +5,7 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 
 ## Project Overview
 
+<!-- TEMPLATE-ONLY-START -->
 **python-package-template** — a production-ready template for
 starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
 hooks. Licensed Apache-2.0.
@@ -13,6 +14,7 @@ This is a **template repository**. Users clone it, run
 `./scripts/init.sh` to rename the package and configure metadata,
 then start building. The demo functions (`hello`, `add`, `subtract`,
 `multiply`) are working examples of the TDD workflow.
+<!-- TEMPLATE-ONLY-END -->
 
 ## Repository Structure
 
@@ -26,6 +28,7 @@ tests/
   conftest.py                  # Shared test fixtures
   test_init.py                  # Package-level tests
   test_main.py                  # Unit tests for demo functions
+  test_main_module.py           # Tests for __main__.py entry point
 .github/
   actions/setup-uv/            # Reusable CI composite action
   dependabot.yml               # Automated dependency updates
