@@ -95,10 +95,11 @@ This project follows a strict TDD-first lifecycle:
 6. **COMMIT** — `<type>(<scope>): <description>` (Conventional Commits)
 7. **Repeat** steps 3–6 until acceptance criteria are met
 8. **DOCS** — update documentation to reflect any user-facing changes
-9. **PUSH** — run `uv run pre-commit run --all-files` before pushing
-10. **PR** — self-review, open PR (target < 400 lines), request review
-11. **CI** — automated format, lint, type check, test matrix
-12. **MERGE** — squash and merge to main
+9. **VERSION** — bump `version` in `pyproject.toml` (required for release)
+10. **PUSH** — run `uv run pre-commit run --all-files`, verify version bump before pushing
+11. **PR** — self-review, open PR (target < 400 lines), request review
+12. **CI** — automated format, lint, type check, test matrix
+13. **MERGE** — squash and merge to main
 
 ## Using uv
 

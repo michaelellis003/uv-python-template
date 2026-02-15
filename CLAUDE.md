@@ -73,10 +73,11 @@ This project follows a strict TDD-first workflow. See
 6. COMMIT — `<type>(<scope>): <description>` after each cycle
 7. Repeat 3-6 until acceptance criteria are met
 8. DOCS — update documentation to reflect user-facing changes
-9. PUSH — run lint + tests before pushing
-10. PR — self-review, open PR, request review
-11. CI — format, lint, type check, test matrix
-12. MERGE — squash and merge to main
+9. VERSION — bump `version` in `pyproject.toml` (required for release)
+10. PUSH — run lint + tests, verify version bump before pushing
+11. PR — self-review, open PR, request review
+12. CI — format, lint, type check, test matrix
+13. MERGE — squash and merge to main
 
 ## Key Rules
 
@@ -85,5 +86,6 @@ This project follows a strict TDD-first workflow. See
 - **79-char lines, 4-space indent, single quotes, Google docstrings**
 - **All functions need type hints and docstrings**
 - **Update docs** (README, docstrings, CLAUDE.md) when behavior changes
+- **Bump version** in `pyproject.toml` before merging to main
 - **Run `uv run pre-commit run --all-files` before every push**
 - **PR target: < 400 lines changed**

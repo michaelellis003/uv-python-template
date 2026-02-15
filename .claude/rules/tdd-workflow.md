@@ -49,6 +49,17 @@ Documentation updates use the `docs` commit type:
 docs(readme): add usage example for new endpoint
 ```
 
+## Version Bump
+
+Before merging to main, bump the `version` in `pyproject.toml`.
+The `release-and-tag.yml` workflow reads this version to create a
+git tag — if the tag already exists, the release will fail.
+
+Use `chore` commit type for version bumps:
+```
+chore: bump version to 0.4.0
+```
+
 ## Verification Before Moving On
 
 After completing a TDD cycle, ALWAYS run:
@@ -56,9 +67,11 @@ After completing a TDD cycle, ALWAYS run:
 uv run pytest -v --durations=0 --cov
 ```
 
-Before pushing, ALWAYS run the full quality suite:
+Before pushing, ALWAYS run the full quality suite and verify the
+version has been bumped:
 ```bash
 uv run pre-commit run --all-files
+git fetch origin main && git diff origin/main -- pyproject.toml | grep '+version'
 ```
 
 ## Test Naming Convention
