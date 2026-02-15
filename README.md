@@ -92,7 +92,7 @@ This handles the package rename, author info, GitHub URLs, version reset, and ch
 |------------|-------|
 | Replace demo code | `<your_package>/main.py` — replace `hello`, `add`, `subtract`, `multiply` with your own code |
 | Update public API | `<your_package>/__init__.py` — update `__all__` and imports |
-| Update tests | `tests/test_init.py` — replace demo tests with your own |
+| Update tests | `tests/test_main.py` — replace demo tests with your own |
 | Set up Codecov | Add `CODECOV_TOKEN` secret in GitHub repo settings and add badge to `README.md` |
 | Update license | `LICENSE` — update copyright holder if needed |
 | Update Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
@@ -109,7 +109,7 @@ If you prefer to customize manually, update these references:
 | Package name, version, author | `pyproject.toml` — `[project]` table |
 | Package source directory | Rename `python_package_template/` to your package name |
 | Public API exports | `<your_package>/__init__.py` — update `__all__` and the `version()` call |
-| Test imports | `tests/test_init.py` — update `from python_package_template import ...` |
+| Test imports | `tests/test_main.py` and `tests/test_init.py` — update imports |
 | README badges & description | `README.md` — replace repo URLs and badge tokens |
 | License | `LICENSE` — update copyright holder if needed |
 | Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
@@ -191,11 +191,12 @@ Version bumping is handled automatically by `python-semantic-release` on merge t
 
 ### On Pull Request and Push to Main (`ci.yml`)
 
-Runs four parallel jobs for fast feedback:
+Runs parallel jobs for fast feedback:
 - **Ruff Lint** — checks for code quality issues
 - **Ruff Format** — verifies consistent code formatting
 - **Pyright** — static type checking
 - **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13 with Codecov upload
+- **Pytest macOS** — smoke test on macOS to catch platform-specific issues
 
 ### On Merge to Main (`release.yml`)
 
@@ -213,7 +214,8 @@ Runs four parallel jobs for fast feedback:
 │   └── py.typed                    # PEP 561 type checking marker
 ├── tests/
 │   ├── conftest.py                 # Shared test fixtures
-│   └── test_init.py                # Unit tests
+│   ├── test_init.py                # Package-level tests
+│   └── test_main.py                # Unit tests for demo functions
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
 │   ├── dependabot.yml              # Automated dependency updates
@@ -229,6 +231,7 @@ Runs four parallel jobs for fast feedback:
 │   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
 │   └── agents/                     # Specialized subagents
 ├── scripts/
+│   ├── init.sh                     # Interactive template initialization
 │   └── setup-repo.sh               # One-time repo setup (branch protection)
 ├── .editorconfig                   # Editor settings for non-Python files
 ├── .gitignore                      # Git ignore rules
@@ -236,6 +239,8 @@ Runs four parallel jobs for fast feedback:
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions
 ├── CHANGELOG.md                   # Release history
+├── CONTRIBUTING.md                # Contribution guidelines
 ├── LICENSE                        # Apache-2.0 license
-└── README.md                      # This file
+├── README.md                      # This file
+└── SECURITY.md                    # Security policy
 ```

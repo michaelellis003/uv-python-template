@@ -11,8 +11,36 @@
 #
 # Usage:
 #   ./scripts/setup-repo.sh
+#   ./scripts/setup-repo.sh --require-reviews 1
 
 set -euo pipefail
+
+# --- Configuration ---------------------------------------------------------
+# Number of required PR approvals before merging.
+# Set to 0 to skip PR review requirements (default, suitable for solo devs).
+# Use --require-reviews N to override.
+REQUIRED_REVIEWS=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --require-reviews)
+            REQUIRED_REVIEWS="${2:-1}"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: ./scripts/setup-repo.sh [--require-reviews N]"
+            echo ""
+            echo "Options:"
+            echo "  --require-reviews N  Require N PR approvals (default: 0)"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            echo "Run with --help for usage." >&2
+            exit 1
+            ;;
+    esac
+done
 
 # Detect repo from git remote
 REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
@@ -23,9 +51,16 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
 
 echo "Configuring branch protection for ${REPO} (main)..."
 
+# Build the PR reviews JSON fragment
+if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
+    PR_REVIEWS="\"required_pull_request_reviews\": { \"required_approving_review_count\": $REQUIRED_REVIEWS }"
+else
+    PR_REVIEWS="\"required_pull_request_reviews\": null"
+fi
+
 gh api "repos/${REPO}/branches/main/protection" \
     --method PUT \
-    --input - <<'JSON'
+    --input - <<EOF
 {
   "required_status_checks": {
     "strict": true,
@@ -40,10 +75,10 @@ gh api "repos/${REPO}/branches/main/protection" \
     ]
   },
   "enforce_admins": true,
-  "required_pull_request_reviews": null,
+  $PR_REVIEWS,
   "restrictions": null
 }
-JSON
+EOF
 
 echo "Done. Branch protection enabled on main."
 echo ""
@@ -52,6 +87,14 @@ echo "  - ruff-lint"
 echo "  - ruff-format"
 echo "  - pyright"
 echo "  - pytest (3.10, 3.11, 3.12, 3.13)"
+if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
+    echo ""
+    echo "Required PR approvals: $REQUIRED_REVIEWS"
+else
+    echo ""
+    echo "PR reviews: not required (solo developer mode)"
+    echo "  To require reviews: ./scripts/setup-repo.sh --require-reviews 1"
+fi
 echo ""
 echo "Note: if you change the Python version matrix in ci.yml,"
 echo "update the pytest checks above to match."

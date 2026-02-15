@@ -84,3 +84,18 @@ jobs:
         continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Smoke test on macOS to catch platform-specific issues.
+  pytest-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0

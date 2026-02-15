@@ -21,10 +21,10 @@ uv run pytest -v --durations=0 --cov --cov-report=xml
 uv run pytest -x --tb=short
 
 # Single test file
-uv run pytest tests/test_init.py -v
+uv run pytest tests/test_main.py -v
 
 # Single test function
-uv run pytest tests/test_init.py::test_add -v
+uv run pytest tests/test_main.py::test_add_two_positive_integers_returns_sum -v
 ```
 
 ## Test File Organization
@@ -94,5 +94,6 @@ def test_refresh_token_with_valid_token_returns_new_pair():
 
 ## CI Test Matrix
 
-Tests run against Python 3.10, 3.11, and 3.12 in CI.
+Tests run against Python 3.10, 3.11, 3.12, and 3.13 in CI.
+A macOS smoke test runs on the latest Python version.
 Coverage reports are uploaded to Codecov.

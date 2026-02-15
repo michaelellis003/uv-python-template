@@ -33,6 +33,23 @@ error() { printf "${RED}error:${NC} %s\n" "$*" >&2; }
 to_snake() { echo "$1" | tr '-' '_'; }
 to_kebab() { echo "$1" | tr '_' '-'; }
 
+# Cross-platform in-place sed (BSD sed on macOS requires -i '')
+sedi() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
+# Replace a sed pattern across all tracked project files
+replace_all() {
+    local pattern="$1"
+    while IFS= read -r file; do
+        sedi "$pattern" "$file" 2>/dev/null || true
+    done <<< "$FILES_TO_UPDATE"
+}
+
 # Validate a package name: lowercase, starts with letter, only [a-z0-9-_]
 validate_name() {
     local name="$1"
@@ -173,22 +190,22 @@ FILES_TO_UPDATE=$(find . \
     -print)
 
 # --- GitHub URLs (most specific — must run before generic name replacement) ---
-echo "$FILES_TO_UPDATE" | xargs sed -i "s|michaelellis003/python-package-template|${GITHUB_REPO}|g" 2>/dev/null || true
-echo "$FILES_TO_UPDATE" | xargs sed -i "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g" 2>/dev/null || true
+replace_all "s|michaelellis003/python-package-template|${GITHUB_REPO}|g"
+replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 
 # --- Author information ---
-sed -i "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
-sed -i "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
+sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
+sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
 
 # --- Package name (generic replacements last) ---
 # Replace python_package_template (snake_case — directory and import name)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/python_package_template/${SNAKE_NAME}/g" 2>/dev/null || true
+replace_all "s/python_package_template/${SNAKE_NAME}/g"
 
 # Replace python-package-template (kebab-case — pypi/metadata name)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/python-package-template/${KEBAB_NAME}/g" 2>/dev/null || true
+replace_all "s/python-package-template/${KEBAB_NAME}/g"
 
 # Replace Python Package Template (title case — README heading etc.)
-echo "$FILES_TO_UPDATE" | xargs sed -i "s/Python Package Template/${KEBAB_NAME}/g" 2>/dev/null || true
+replace_all "s/Python Package Template/${KEBAB_NAME}/g"
 
 # ---------------------------------------------------------------------------
 # 3. Update project description
@@ -196,7 +213,7 @@ echo "$FILES_TO_UPDATE" | xargs sed -i "s/Python Package Template/${KEBAB_NAME}/
 
 info "Updating project description..."
 
-sed -i "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
+sedi "s|A production-ready template for starting new Python packages\.|${DESCRIPTION}|" pyproject.toml
 
 # ---------------------------------------------------------------------------
 # 4. Update README badges (remove codecov badge, update license badge)
@@ -205,12 +222,12 @@ sed -i "s|A production-ready template for starting new Python packages\.|${DESCR
 info "Updating README badges..."
 
 # Remove the codecov badge line (user will add their own when they set up codecov)
-sed -i '/codecov\.io/d' README.md
+sedi '/codecov\.io/d' README.md
 
 # The license badge URL was already updated by the GitHub URL replacement above
 
 # Update the README description line
-sed -i "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION}|" README.md
+sedi "s|A production-ready template for starting new Python packages\. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up\.|${DESCRIPTION}|" README.md
 
 # ---------------------------------------------------------------------------
 # 5. Update keywords
@@ -218,7 +235,7 @@ sed -i "s|A production-ready template for starting new Python packages\. Clone i
 
 info "Updating keywords..."
 
-sed -i 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords = []/' pyproject.toml
+sedi 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords = []/' pyproject.toml
 
 # ---------------------------------------------------------------------------
 # 6. Reset version and changelog
@@ -226,7 +243,7 @@ sed -i 's/keywords = \["template", "python", "uv", "ruff", "pyright"\]/keywords 
 
 info "Resetting version to 0.1.0..."
 
-sed -i 's/^version = ".*"/version = "0.1.0"/' pyproject.toml
+sedi 's/^version = ".*"/version = "0.1.0"/' pyproject.toml
 
 info "Resetting CHANGELOG.md..."
 
@@ -242,7 +259,7 @@ CHANGELOG_EOF
 
 info "Cleaning up TODO comments..."
 
-sed -i '/# TODO: Update the --upgrade-package/d' pyproject.toml
+sedi '/# TODO: Update the --upgrade-package/d' pyproject.toml
 
 # ---------------------------------------------------------------------------
 # 8. Update the README "Customizing the Template" section
@@ -251,11 +268,11 @@ sed -i '/# TODO: Update the --upgrade-package/d' pyproject.toml
 info "Updating README template instructions..."
 
 # Replace "my-project" in the clone command (URL was already updated above)
-sed -i "s|\.git my-project|.git ${KEBAB_NAME}|" README.md
+sedi "s|\.git my-project|.git ${KEBAB_NAME}|" README.md
 
 # Update project structure section — remove "(rename this)" hint
 # (package name was already updated by the global replacement above)
-sed -i "s|# Package source (rename this)|# Package source|" README.md
+sedi "s|# Package source (rename this)|# Package source|" README.md
 
 # ---------------------------------------------------------------------------
 # 9. Regenerate the lockfile

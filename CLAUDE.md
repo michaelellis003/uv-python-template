@@ -23,7 +23,8 @@ python_package_template/         # Main package source
   py.typed                      # PEP 561 type checking marker
 tests/
   conftest.py                  # Shared test fixtures
-  test_init.py                  # Unit tests
+  test_init.py                  # Package-level tests
+  test_main.py                  # Unit tests for demo functions
 .github/
   actions/setup-uv/            # Reusable CI composite action
   dependabot.yml               # Automated dependency updates
@@ -62,6 +63,8 @@ pyproject.toml                  # Project config, deps, tool settings
 uv.lock                        # Locked dependency versions
 README.md                      # User documentation
 CHANGELOG.md                   # Release history
+CONTRIBUTING.md                # Contribution guidelines
+SECURITY.md                    # Security policy
 LICENSE                        # Apache-2.0 license
 ```
 

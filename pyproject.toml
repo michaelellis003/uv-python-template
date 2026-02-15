@@ -24,6 +24,10 @@ classifiers = [
 dependencies = [
 ]
 
+# Uncomment to add a CLI entry point:
+# [project.scripts]
+# python-package-template = "python_package_template.main:main"
+
 [project.urls]
 Homepage = "https://github.com/michaelellis003/python-package-template"
 Repository = "https://github.com/michaelellis003/python-package-template"
