@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v1.3.0 (2026-02-15)
+
+### Bug Fixes
+
+- **template**: Address review findings across template repo
+  ([`a7cd545`](https://github.com/michaelellis003/uv-python-template/commit/a7cd54508bab4b929f0b1169364fbbf22e3a935c))
+
+### Features
+
+- **init**: Self-clean after initialization
+  ([`b8f6346`](https://github.com/michaelellis003/uv-python-template/commit/b8f63462441c903bdcdea2a2f14c72a81aa86ad7))
+
+### Refactoring
+
+- **scripts**: Address review feedback for init.sh and setup-repo.sh
+  ([`26740ed`](https://github.com/michaelellis003/uv-python-template/commit/26740ed785735b6ee67fb70278613a02572aee84))
+
+
 ## v1.2.0 (2026-02-15)
 
 ### Documentation
