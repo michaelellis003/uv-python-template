@@ -5,7 +5,7 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 
 ## Project Overview
 
-**python-package-template** (v0.2.0) — a production-ready template for
+**python-package-template** (v0.3.0) — a production-ready template for
 starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
 hooks. Licensed Apache-2.0.
 
