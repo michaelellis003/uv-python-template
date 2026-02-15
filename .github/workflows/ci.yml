@@ -19,7 +19,7 @@ jobs:
         id: get-versions
         run: |
           echo "max_version=$(tail -n 1 .python-versions)" >> $GITHUB_OUTPUT
-          echo "matrix={\"python-version\": $(cat .python-versions | jq -R -s -c 'split("\n")')}" >> $GITHUB_OUTPUT
+          echo "matrix={\"python-version\": $(cat .python-versions | jq -R -s -c 'split("\n") | map(select(length > 0))')}" >> $GITHUB_OUTPUT
 
   ruff-lint-and-format:
     needs: get-python-versions
