@@ -38,7 +38,10 @@ tests/
   rules/                        # Modular instructions by topic
     tdd-workflow.md             # TDD Red-Green-Refactor lifecycle
     code-style.md               # Formatting, linting, docstrings
+    design-principles.md        # KISS, YAGNI, SOLID, composition, SoC, least astonishment
+    error-handling.md           # EAFP, custom exceptions, fail fast, guard clauses
     git-conventions.md          # Branching, commits, PR workflow
+    python-idioms.md            # Dataclasses, pathlib, generators, enums, functools
     testing.md                  # Test structure and conventions
   skills/                       # Custom slash commands
     tdd/SKILL.md                # /tdd — TDD cycle for a feature
@@ -95,6 +98,12 @@ This project follows a strict TDD-first workflow. See
 
 ## Key Rules
 
+- **Design principles** — KISS, YAGNI, SOLID, composition over
+  inheritance, separation of concerns, least astonishment
+- **Error handling** — EAFP over LBYL, specific exceptions, fail
+  fast, guard clauses, chain with `from`
+- **Python idioms** — dataclasses, enums, pathlib, generators,
+  comprehensions, context managers, functools
 - **Always write tests before implementation** (TDD)
 - **Conventional Commits** — `feat`, `fix`, `test`, `refactor`, `docs`, `chore`
 - **79-char lines, 4-space indent, single quotes, Google docstrings**
