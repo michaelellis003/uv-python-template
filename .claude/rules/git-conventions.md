@@ -98,25 +98,25 @@ Use `docs(<scope>): <description>` commits for documentation-only
 changes. If docs are part of a feature, include them in the
 `feat` commit.
 
-## Version Bump
+## Version Bump (Automated)
 
-Before merging to main, bump the `version` field in `pyproject.toml`.
-The `release-and-tag.yml` workflow creates a git tag from this version.
-If the tag already exists the release will fail.
+Version bumping is handled automatically by `python-semantic-release`
+when a PR is merged to main. It reads conventional commit messages to
+determine the bump type:
 
-Verify the version has been bumped before pushing:
-```bash
-git fetch origin main
-git diff origin/main -- pyproject.toml | grep '+version'
-```
+- `feat:` → minor bump (0.3.0 → 0.4.0)
+- `fix:` / `perf:` → patch bump (0.3.0 → 0.3.1)
+- `feat!:` / `BREAKING CHANGE` → major bump (0.3.0 → 1.0.0)
+
+Do **not** manually bump the version in `pyproject.toml`. The
+`release.yml` workflow handles version bumps, tagging, and GitHub
+Release creation.
 
 ## Push Frequency
 
 - Push every 3-5 commits or at end of session
 - Run full quality suite before pushing:
   `uv run pre-commit run --all-files`
-- Verify version bump:
-  `git diff origin/main -- pyproject.toml | grep '+version'`
 - Rebase on main before pushing:
   `git fetch origin && git rebase origin/main`
 

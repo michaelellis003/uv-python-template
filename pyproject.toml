@@ -93,3 +93,13 @@ docstring-code-line-length = "dynamic"
 venvPath = "."
 venv = ".venv"
 exclude = ["tests", ".venv"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+commit_message = "chore(release): v{version}"
+build_command = """
+    uv lock --upgrade-package python-package-template
+    git add uv.lock
+    uv build
+"""
