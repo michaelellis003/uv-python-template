@@ -79,6 +79,7 @@ After cloning, update these files to match your project:
 | README badges & description | `README.md` — replace repo URLs and badge tokens |
 | License | `LICENSE` — update copyright holder if needed |
 | Python versions | `.python-versions` and `requires-python` in `pyproject.toml` |
+| Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
 
 The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
@@ -95,11 +96,11 @@ This project follows a strict TDD-first lifecycle:
 6. **COMMIT** — `<type>(<scope>): <description>` (Conventional Commits)
 7. **Repeat** steps 3–6 until acceptance criteria are met
 8. **DOCS** — update documentation to reflect any user-facing changes
-9. **VERSION** — bump `version` in `pyproject.toml` (required for release)
-10. **PUSH** — run `uv run pre-commit run --all-files`, verify version bump before pushing
-11. **PR** — self-review, open PR (target < 400 lines), request review
-12. **CI** — automated format, lint, type check, test matrix
-13. **MERGE** — squash and merge to main
+9. **PUSH** — run `uv run pre-commit run --all-files` before pushing
+10. **PR** — self-review, open PR (target < 400 lines), request review
+11. **CI** — parallel: ruff lint, ruff format, pyright, test matrix
+12. **MERGE** — squash and merge to main
+13. **RELEASE** — `python-semantic-release` auto-bumps version, tags, and creates a GitHub Release based on conventional commit messages
 
 ## Using uv
 
@@ -142,23 +143,26 @@ uv run pyright                               # Type check
 
 Read more about [dependency management in uv](https://docs.astral.sh/uv/concepts/projects/dependencies/).
 
-### Updating Package Version
+### Versioning (Automated)
 
-Before merging to main, update the `version` field in `pyproject.toml` under the `[project]` table. If you don't, the `release-and-tag.yml` workflow will fail because the tag already exists.
+Version bumping is handled automatically by `python-semantic-release` on merge to main. It reads conventional commit messages to determine the bump type: `feat:` triggers a minor bump, `fix:`/`perf:` triggers a patch bump, and `feat!:`/`BREAKING CHANGE` triggers a major bump. Do not manually bump the version in `pyproject.toml`.
 
 ## CI/CD Workflows
 
-### On Push to Non-Main Branches (`ci.yml`)
+### On Pull Request and Push to Main (`ci.yml`)
 
-- **Linting & Formatting** — runs `pre-commit` checks (Ruff, Pyright)
-- **Testing** — runs `pytest` across Python 3.10, 3.11, and 3.12
-- **Coverage** — uploads test coverage reports to Codecov
+Runs four parallel jobs for fast feedback:
+- **Ruff Lint** — checks for code quality issues
+- **Ruff Format** — verifies consistent code formatting
+- **Pyright** — static type checking
+- **Pytest** — runs tests across Python 3.10, 3.11, and 3.12 with Codecov upload
 
-### On Merge to Main (`release-and-tag.yml`)
+### On Merge to Main (`release.yml`)
 
-- **Tagging** — reads version from `pyproject.toml`, creates a git tag
+- **Versioning** — `python-semantic-release` reads conventional commits and bumps the version automatically
+- **Tagging** — creates a git tag for the new version
 - **Building** — runs `uv build` to produce sdist and wheel
-- **Releasing** — creates a GitHub Release with the built distribution files
+- **Releasing** — creates a GitHub Release with the built artifacts and release notes
 
 ## Project Structure
 
@@ -171,8 +175,8 @@ Before merging to main, update the `version` field in `pyproject.toml` under the
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
 │   └── workflows/
-│       ├── ci.yml                  # CI: lint + test matrix
-│       └── release-and-tag.yml     # Auto-tag + GitHub Release on merge
+│       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
+│       └── release.yml             # Auto-version, tag + GitHub Release on merge
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
 │   ├── rules/                      # Development standards
