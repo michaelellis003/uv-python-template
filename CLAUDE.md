@@ -5,9 +5,14 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 
 ## Project Overview
 
-**python-package-template** (v0.2.0) — a production-ready Python package
-template using uv, Ruff, Pyright, and pre-commit hooks. Licensed
-Apache-2.0.
+**python-package-template** (v0.3.0) — a production-ready template for
+starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
+hooks. Licensed Apache-2.0.
+
+This is a **template repository**. Users clone it, rename the package
+directory and metadata, then start building. The demo functions
+(`hello`, `add`, `subtract`, `multiply`) are working examples of the
+TDD workflow.
 
 ## Repository Structure
 
@@ -67,10 +72,12 @@ This project follows a strict TDD-first workflow. See
 5. REFACTOR — clean up, tests still pass
 6. COMMIT — `<type>(<scope>): <description>` after each cycle
 7. Repeat 3-6 until acceptance criteria are met
-8. PUSH — run lint + tests before pushing
-9. PR — self-review, open PR, request review
-10. CI — format, lint, type check, test matrix
-11. MERGE — squash and merge to main
+8. DOCS — update documentation to reflect user-facing changes
+9. VERSION — bump `version` in `pyproject.toml` (required for release)
+10. PUSH — run lint + tests, verify version bump before pushing
+11. PR — self-review, open PR, request review
+12. CI — format, lint, type check, test matrix
+13. MERGE — squash and merge to main
 
 ## Key Rules
 
@@ -78,5 +85,7 @@ This project follows a strict TDD-first workflow. See
 - **Conventional Commits** — `feat`, `fix`, `test`, `refactor`, `docs`, `chore`
 - **79-char lines, 4-space indent, single quotes, Google docstrings**
 - **All functions need type hints and docstrings**
+- **Update docs** (README, docstrings, CLAUDE.md) when behavior changes
+- **Bump version** in `pyproject.toml` before merging to main
 - **Run `uv run pre-commit run --all-files` before every push**
 - **PR target: < 400 lines changed**

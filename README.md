@@ -7,98 +7,179 @@
 [![codecov](https://codecov.io/gh/michaelellis003/python-package-template/graph/badge.svg?token=TUKP19SKJ3)](https://codecov.io/gh/michaelellis003/python-package-template)
 [![License](https://img.shields.io/github/license/michaelellis003/python-package-template)](https://github.com/michaelellis003/python-package-template/blob/main/LICENSE)
 
-The `python-package-template` repository offers a robust template for creating Python packages. It incorporates best practices for project structure, dependency management, testing, and CI/CD, enabling developers to quickly set up and maintain high-quality Python projects.
+A production-ready template for starting new Python packages. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up.
 
 ## Table of Contents
 1. [Features](#features)
-2. [How to use](#how-to-use)
-3. [Using uv](#using-uv)
-   - [Managing Dependencies](#managing-dependencies)
-   - [Updating Package Version](#updating-package-version)
-5. [CI/CD Workflows](#ci-cd-workflows)
+2. [Getting Started](#getting-started)
+3. [Customizing the Template](#customizing-the-template)
+4. [Development Workflow](#development-workflow)
+5. [Using uv](#using-uv)
+6. [CI/CD Workflows](#cicd-workflows)
+7. [Project Structure](#project-structure)
 
 ## Features
-- [uv](https://docs.astral.sh/uv/) for Python package management and environment handling.
-- [Pre-commit hooks](https://pre-commit.com) to enforce consistent code style, including:
+- [uv](https://docs.astral.sh/uv/) for fast Python package management, virtual environments, and lockfile resolution.
+- [Pre-commit hooks](https://pre-commit.com) to enforce consistent code quality on every commit:
     - [Ruff](https://docs.astral.sh/ruff/) for linting and formatting,
     - [Pyright](https://github.com/microsoft/pyright) for static type checking.
-- [Pytest](https://docs.pytest.org/en/stable/) for running code tests.
-- **GitHub Actions** for CI/CD, including automated tests, lint checks, and release tagging.
+- [Pytest](https://docs.pytest.org/en/stable/) with [pytest-cov](https://pytest-cov.readthedocs.io/) for testing and coverage.
+- **GitHub Actions** CI/CD — lint, test across Python 3.10–3.12, and auto-release on merge to main.
+- **TDD-first development lifecycle** with Claude Code configuration for AI-assisted development.
 
-## How to use
-1. Install uv
-- [See the uv documentation](https://docs.astral.sh/uv/getting-started/installation/) for more details and alternate methods. Examples include:
-    ```
-    # using the standalone installer
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+## Getting Started
+
+### Prerequisites
+- Python 3.10+ (uv will download it automatically if missing)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+Install uv:
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Create a New Project from This Template
+
+1. Click **"Use this template"** on GitHub (or clone the repo directly):
+    ```bash
+    git clone https://github.com/michaelellis003/python-package-template.git my-project
+    cd my-project
+    rm -rf .git && git init
     ```
 
-2. Install package dependencies needed for development:
-    ```
+2. Install dependencies:
+    ```bash
     uv sync
     ```
 
-3. Enable pre-commit hooks in your local environment so they run automatically before every commit:
-    ```
+3. Enable pre-commit hooks:
+    ```bash
     uv run pre-commit install
     ```
 
-4. Update project metadata in:
-    - `pyproject.toml`:
-        - Change the project name, version, and author information to match your package.
-    - `README.md`, `LICENSE`, `CHANGELOG.md` (optional):
-        - Replace placeholder names, badges, and repository links with those for your project.
+4. Run the tests to verify everything works:
+    ```bash
+    uv run pytest -v --durations=0 --cov
+    ```
+
+## Customizing the Template
+
+After cloning, update these files to match your project:
+
+| What to change | Where |
+|----------------|-------|
+| Package name, version, author | `pyproject.toml` — `[project]` table |
+| Package source directory | Rename `python_package_template/` to your package name |
+| Public API exports | `<your_package>/__init__.py` — update `__all__` |
+| Test imports | `tests/test_init.py` — update `from python_package_template import ...` |
+| README badges & description | `README.md` — replace repo URLs and badge tokens |
+| License | `LICENSE` — update copyright holder if needed |
+| Python versions | `.python-versions` and `requires-python` in `pyproject.toml` |
+| Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
+
+The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
+
+## Development Workflow
+
+This project follows a strict TDD-first lifecycle:
+
+1. **Define** — create an issue with Given/When/Then acceptance criteria
+2. **Branch** — `<type>/<issue-id>-<short-description>` from `main`
+3. **RED** — write one failing test
+4. **GREEN** — write the minimum code to pass
+5. **REFACTOR** — clean up while tests stay green
+6. **COMMIT** — `<type>(<scope>): <description>` (Conventional Commits)
+7. **Repeat** steps 3–6 until acceptance criteria are met
+8. **DOCS** — update documentation to reflect any user-facing changes
+9. **VERSION** — bump `version` in `pyproject.toml` (required for release)
+10. **PUSH** — run `uv run pre-commit run --all-files`, verify version bump before pushing
+11. **PR** — self-review, open PR (target < 400 lines), request review
+12. **CI** — automated format, lint, type check, test matrix
+13. **MERGE** — squash and merge to main
 
 ## Using uv
-For the full uv documentation, visit the [full docs](https://docs.astral.sh/uv/)
+
+For the full uv documentation, visit the [full docs](https://docs.astral.sh/uv/).
+
+### Quick Reference
+
+```bash
+uv sync                                      # Install all dependencies
+uv run pytest -v --durations=0 --cov         # Run tests with coverage
+uv run pre-commit run --all-files            # Run all quality checks
+uv run ruff check . --fix                    # Lint (with auto-fix)
+uv run ruff format .                         # Format code
+uv run pyright                               # Type check
+```
 
 ### Managing Dependencies
-- Adding Dependencies
-    - To add a new runtime dependency to your project, use:
-        ```
-        uv add <package_name>
-        ```
-    - Example:
-        ```
-        uv add requests
-        ```
-        This updates your `pyproject.toml` under `[project.dependencies]` and synchronizes your virtual environment automatically.
 
-    - For dev-only dependencies, use the `--dev` flag:
-        ```
-        uv add --dev pytest
-        ```
-        This updates `[dependency-groups]` in your `pyproject.toml`.
+- **Add a runtime dependency:**
+    ```bash
+    uv add requests
+    ```
+    Updates `[project.dependencies]` in `pyproject.toml` and syncs your environment.
 
-    - uv supports organizing dependencies into named groups:
-        ```
-        uv add --group <group-name> <package_name>
-        ```
-        Read more about this [here](https://docs.astral.sh/uv/concepts/projects/dependencies/)
+- **Add a dev dependency:**
+    ```bash
+    uv add --dev pytest-mock
+    ```
+    Updates `[dependency-groups]` in `pyproject.toml`.
 
-- Removing Dependencies
-    - Similarly, to remove a dependency:
-        ```
-        uv remove requests
-        ```
-        uv removes the package from your `pyproject.toml` and uninstalls it from your virtual environment.
+- **Add to a named group:**
+    ```bash
+    uv add --group docs sphinx
+    ```
+
+- **Remove a dependency:**
+    ```bash
+    uv remove requests
+    ```
+
+Read more about [dependency management in uv](https://docs.astral.sh/uv/concepts/projects/dependencies/).
 
 ### Updating Package Version
-- Before merging a branch into main to release a new version of your package you will need to update the version number in the `pyproject.toml`. If you do not update the version number before merging to the main branch the `release-and-tag.yml` workflow will fail.
-- Update the `version` field directly in `pyproject.toml` under the `[project]` table.
 
-## CI-CD Workflows
+Before merging to main, update the `version` field in `pyproject.toml` under the `[project]` table. If you don't, the `release-and-tag.yml` workflow will fail because the tag already exists.
 
-This project uses GitHub Actions for continuous integration and deployment.
+## CI/CD Workflows
 
-### On Push to Non-Main Branches
+### On Push to Non-Main Branches (`ci.yml`)
 
-- **Linting & Formatting:** Runs `pre-commit` checks using `ruff`.
-- **Testing:** Runs `pytest` across Python 3.10, 3.11, and 3.12.
-- **Coverage Upload:** Sends test coverage reports to Codecov.
+- **Linting & Formatting** — runs `pre-commit` checks (Ruff, Pyright)
+- **Testing** — runs `pytest` across Python 3.10, 3.11, and 3.12
+- **Coverage** — uploads test coverage reports to Codecov
 
-### On Merging into Main
+### On Merge to Main (`release-and-tag.yml`)
 
-- **Tagging & Releasing:** Automatically tags a new version based on `pyproject.toml`.
-- **Builds the Package:** Uses uv to create distribution files.
-- **Creates a GitHub Release:** Uploads the built package to GitHub releases.
+- **Tagging** — reads version from `pyproject.toml`, creates a git tag
+- **Building** — runs `uv build` to produce sdist and wheel
+- **Releasing** — creates a GitHub Release with the built distribution files
+
+## Project Structure
+
+```
+├── python_package_template/         # Package source (rename this)
+│   ├── __init__.py                  # Public API exports
+│   └── main.py                     # Core module with demo functions
+├── tests/
+│   └── test_init.py                # Unit tests
+├── .github/
+│   ├── actions/setup-uv/           # Reusable CI composite action
+│   └── workflows/
+│       ├── ci.yml                  # CI: lint + test matrix
+│       └── release-and-tag.yml     # Auto-tag + GitHub Release on merge
+├── .claude/                         # Claude Code AI assistant config
+│   ├── settings.json               # Permissions, hooks
+│   ├── rules/                      # Development standards
+│   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
+│   └── agents/                     # Specialized subagents
+├── pyproject.toml                  # Project config, deps, tool settings
+├── uv.lock                        # Locked dependency versions
+├── .pre-commit-config.yaml         # Pre-commit hook definitions
+└── .python-versions                # Supported Python versions
+```
