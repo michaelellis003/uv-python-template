@@ -26,7 +26,7 @@ dependencies = [
 
 # Uncomment to add a CLI entry point:
 # [project.scripts]
-# python-package-template = "python_package_template.main:main"
+# python-package-template = "python_package_template.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/michaelellis003/python-package-template"
@@ -114,11 +114,11 @@ force-single-line = false
 force-wrap-aliases = false
 lines-after-imports = -1
 lines-between-types = 0
-split-on-trailing-comma = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "S101", "PLR2004"]
 "__init__.py" = ["F401"]
+"__main__.py" = ["T20"]
 
 [tool.ruff.format]
 quote-style = "single"

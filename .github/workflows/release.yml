@@ -43,3 +43,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run semantic-release publish
+
+      # --- Uncomment below to publish to PyPI using trusted publishing (OIDC) ---
+      # Prerequisites:
+      #   1. Create a PyPI account at https://pypi.org
+      #   2. Add a trusted publisher for this repo in PyPI project settings
+      #      (owner: <github-owner>, repo: <repo-name>, workflow: release.yml)
+      #   3. Uncomment the step below
+      #
+      # - name: Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     packages-dir: dist/

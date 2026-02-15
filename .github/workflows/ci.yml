@@ -79,15 +79,31 @@ jobs:
         run: uv run pytest -v --durations=0 --cov --cov-report=xml
 
       # continue-on-error so CI passes in forks without a CODECOV_TOKEN secret
+      # Only upload from one Python version to avoid redundant uploads.
       - name: Upload Coverage to Codecov
+        if: matrix.python-version == '3.13'
         uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  # Smoke test on macOS to catch platform-specific issues.
+  # Smoke tests on macOS and Windows to catch platform-specific issues.
   pytest-macos:
     runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0
+
+  pytest-windows:
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6

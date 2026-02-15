@@ -10,13 +10,13 @@
 A production-ready template for starting new Python packages. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up.
 
 ## Table of Contents
-1. [Features](#features)
-2. [Getting Started](#getting-started)
-3. [Customizing the Template](#customizing-the-template)
-4. [Development Workflow](#development-workflow)
-5. [Using uv](#using-uv)
-6. [CI/CD Workflows](#cicd-workflows)
-7. [Project Structure](#project-structure)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Customizing the Template](#customizing-the-template)
+- [Development Workflow](#development-workflow)
+- [Using uv](#using-uv)
+- [CI/CD Workflows](#cicd-workflows)
+- [Project Structure](#project-structure)
 
 ## Features
 - [uv](https://docs.astral.sh/uv/) for fast Python package management, virtual environments, and lockfile resolution.
@@ -52,11 +52,17 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
     rm -rf .git && git init
     ```
 
-2. Run the interactive setup script to rename the package and configure your project:
+2. Run the setup script to rename the package and configure your project:
     ```bash
     ./scripts/init.sh
     ```
     This will prompt you for your package name, author info, and GitHub details, then update all references across the codebase automatically.
+
+    For non-interactive usage, pass all values as flags:
+    ```bash
+    ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
+                      --github-owner janesmith --description "My awesome package"
+    ```
 
 3. Install dependencies:
     ```bash
@@ -199,6 +205,7 @@ Runs parallel jobs for fast feedback:
 - **Pyright** — static type checking
 - **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13 with Codecov upload
 - **Pytest macOS** — smoke test on macOS to catch platform-specific issues
+- **Pytest Windows** — smoke test on Windows to catch platform-specific issues
 
 ### On Merge to Main (`release.yml`)
 
@@ -212,6 +219,7 @@ Runs parallel jobs for fast feedback:
 ```
 ├── python_package_template/         # Package source (rename this)
 │   ├── __init__.py                  # Public API exports + __version__
+│   ├── __main__.py                  # python -m entry point
 │   ├── main.py                     # Core module with demo functions
 │   └── py.typed                    # PEP 561 type checking marker
 ├── tests/

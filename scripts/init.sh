@@ -7,6 +7,8 @@
 # Usage:
 #   ./scripts/init.sh
 #   ./scripts/init.sh --name my-cool-package
+#   ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
+#                     --github-owner janesmith --description "My awesome package"
 #
 # Prerequisites:
 #   - uv installed (https://docs.astral.sh/uv/getting-started/installation/)
@@ -32,6 +34,7 @@ error() { printf "${RED}error:${NC} %s\n" "$*" >&2; }
 
 to_snake() { echo "$1" | tr '-' '_'; }
 to_kebab() { echo "$1" | tr '_' '-'; }
+to_title() { echo "$1" | tr '-' ' ' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1'; }
 
 # Cross-platform in-place sed (BSD sed on macOS requires -i '')
 sedi() {
@@ -84,6 +87,10 @@ fi
 # ---------------------------------------------------------------------------
 
 PROJECT_NAME=""
+AUTHOR_NAME=""
+AUTHOR_EMAIL=""
+GITHUB_OWNER=""
+DESCRIPTION=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -91,11 +98,35 @@ while [[ $# -gt 0 ]]; do
             PROJECT_NAME="$2"
             shift 2
             ;;
+        --author)
+            AUTHOR_NAME="$2"
+            shift 2
+            ;;
+        --email)
+            AUTHOR_EMAIL="$2"
+            shift 2
+            ;;
+        --github-owner)
+            GITHUB_OWNER="$2"
+            shift 2
+            ;;
+        --description)
+            DESCRIPTION="$2"
+            shift 2
+            ;;
         --help|-h)
-            echo "Usage: ./scripts/init.sh [--name <package-name>]"
+            echo "Usage: ./scripts/init.sh [OPTIONS]"
             echo ""
             echo "Interactive setup script for the python-package-template."
-            echo "If --name is not provided, you will be prompted for all values."
+            echo "If options are not provided, you will be prompted for values."
+            echo ""
+            echo "Options:"
+            echo "  --name, -n NAME       Package name (kebab-case)"
+            echo "  --author NAME         Author name (e.g. 'Jane Smith')"
+            echo "  --email EMAIL         Author email"
+            echo "  --github-owner OWNER  GitHub username or organization"
+            echo "  --description TEXT     Short project description"
+            echo "  --help, -h            Show this help message"
             exit 0
             ;;
         *)
@@ -126,30 +157,40 @@ fi
 
 KEBAB_NAME=$(to_kebab "$PROJECT_NAME")
 SNAKE_NAME=$(to_snake "$PROJECT_NAME")
+TITLE_NAME=$(to_title "$KEBAB_NAME")
 
 validate_name "$KEBAB_NAME" || exit 1
 
 # Author
-printf "${BOLD}Author name${NC} (e.g. Jane Smith): "
-read -r AUTHOR_NAME
+if [[ -z "$AUTHOR_NAME" ]]; then
+    printf "${BOLD}Author name${NC} (e.g. Jane Smith): "
+    read -r AUTHOR_NAME
+fi
 
-printf "${BOLD}Author email${NC}: "
-read -r AUTHOR_EMAIL
+if [[ -z "$AUTHOR_EMAIL" ]]; then
+    printf "${BOLD}Author email${NC}: "
+    read -r AUTHOR_EMAIL
+fi
 
 # GitHub
-printf "${BOLD}GitHub owner${NC} (username or org): "
-read -r GITHUB_OWNER
+if [[ -z "$GITHUB_OWNER" ]]; then
+    printf "${BOLD}GitHub owner${NC} (username or org): "
+    read -r GITHUB_OWNER
+fi
 
 GITHUB_REPO="${GITHUB_OWNER}/${KEBAB_NAME}"
 
 # Description
-printf "${BOLD}Short description${NC} (one line): "
-read -r DESCRIPTION
+if [[ -z "$DESCRIPTION" ]]; then
+    printf "${BOLD}Short description${NC} (one line): "
+    read -r DESCRIPTION
+fi
 
 echo ""
 echo "-----------------------------------------"
 echo "  Package name (kebab):  ${KEBAB_NAME}"
 echo "  Package name (snake):  ${SNAKE_NAME}"
+echo "  Package name (title):  ${TITLE_NAME}"
 echo "  Author:                ${AUTHOR_NAME} <${AUTHOR_EMAIL}>"
 echo "  GitHub repo:           ${GITHUB_REPO}"
 echo "  Description:           ${DESCRIPTION}"
@@ -209,7 +250,7 @@ replace_all "s/python_package_template/${SNAKE_NAME}/g"
 replace_all "s/python-package-template/${KEBAB_NAME}/g"
 
 # Replace Python Package Template (title case — README heading etc.)
-replace_all "s/Python Package Template/${KEBAB_NAME}/g"
+replace_all "s/Python Package Template/${TITLE_NAME}/g"
 
 # ---------------------------------------------------------------------------
 # 3. Update project description
@@ -319,10 +360,6 @@ awk -v repo="${GITHUB_REPO}" -v name="${KEBAB_NAME}" '
 
 # Remove "Customizing the Template" from Table of Contents
 sedi '/Customizing the Template/d' README.md
-
-# Renumber the Table of Contents entries
-awk '/^[0-9]+\. \[/ { n++; sub(/^[0-9]+/, n) } { print }' \
-    README.md > README.md.tmp && mv README.md.tmp README.md
 
 # Remove init.sh from project structure diagrams
 sedi '/init\.sh.*Interactive template/d' README.md

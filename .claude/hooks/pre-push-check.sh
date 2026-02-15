@@ -24,6 +24,12 @@ if echo "$COMMAND" | grep -qE '^git push'; then
         exit 2
     fi
 
+    # Run pyright type check
+    if ! uv run pyright >/dev/null 2>&1; then
+        echo "BLOCKED: Pyright type check failed. Run 'uv run pyright' to see errors." >&2
+        exit 2
+    fi
+
     # Run tests
     if ! uv run pytest -x --tb=short -q 2>/dev/null; then
         echo "BLOCKED: Tests are failing. Fix failing tests before pushing." >&2

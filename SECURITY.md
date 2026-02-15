@@ -5,7 +5,11 @@
 If you discover a security vulnerability, please report it
 responsibly. **Do not** open a public GitHub issue.
 
-Email the maintainer (see `pyproject.toml` for contact info) with:
+**Preferred:** Use [GitHub private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
+via the **Security** tab of this repository.
+
+**Alternative:** Email the maintainer (see `pyproject.toml` for
+contact info) with:
 
 - Description of the vulnerability
 - Steps to reproduce

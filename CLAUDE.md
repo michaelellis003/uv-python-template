@@ -19,6 +19,7 @@ then start building. The demo functions (`hello`, `add`, `subtract`,
 ```
 python_package_template/         # Main package source
   __init__.py                    # Public API exports + __version__
+  __main__.py                    # python -m entry point
   main.py                       # Core module with demo functions
   py.typed                      # PEP 561 type checking marker
 tests/
@@ -53,6 +54,9 @@ tests/
   agents/
     code-reviewer.md            # Code review subagent
     test-writer.md              # Test-first subagent
+  hooks/                          # Tool-use hooks
+    protect-files.sh              # Block edits to protected files
+    pre-push-check.sh            # Lint + typecheck + test before push
 scripts/
   init.sh                        # Interactive project initialization
   setup-repo.sh                  # One-time repo setup (branch protection)
