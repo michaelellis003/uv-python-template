@@ -180,9 +180,13 @@ info "Updating package name references..."
 # Order matters: replace the longer/more specific patterns first
 # so shorter patterns don't break longer matches.
 
-# Files to update (excludes .git, uv.lock, CHANGELOG.md, and this script)
+# Files to update (excludes .git, caches, venv, lockfile, and this script)
 FILES_TO_UPDATE=$(find . \
     -not -path './.git/*' \
+    -not -path './.venv/*' \
+    -not -path './.ruff_cache/*' \
+    -not -path './.pytest_cache/*' \
+    -not -path './*__pycache__*' \
     -not -path './uv.lock' \
     -not -path './CHANGELOG.md' \
     -not -name 'init.sh' \

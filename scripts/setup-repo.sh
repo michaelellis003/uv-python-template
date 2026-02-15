@@ -51,11 +51,11 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
 
 echo "Configuring branch protection for ${REPO} (main)..."
 
-# Build the PR reviews JSON fragment
+# Build the PR reviews JSON value
 if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
-    PR_REVIEWS="\"required_pull_request_reviews\": { \"required_approving_review_count\": $REQUIRED_REVIEWS }"
+    REVIEWS_VALUE="{ \"required_approving_review_count\": $REQUIRED_REVIEWS }"
 else
-    PR_REVIEWS="\"required_pull_request_reviews\": null"
+    REVIEWS_VALUE="null"
 fi
 
 gh api "repos/${REPO}/branches/main/protection" \
@@ -75,7 +75,7 @@ gh api "repos/${REPO}/branches/main/protection" \
     ]
   },
   "enforce_admins": true,
-  $PR_REVIEWS,
+  "required_pull_request_reviews": ${REVIEWS_VALUE},
   "restrictions": null
 }
 EOF
