@@ -36,12 +36,12 @@ Each commit should represent one coherent, passing behavior.
 
 After completing a TDD cycle, ALWAYS run:
 ```bash
-poetry run pytest -v --durations=0 --cov
+uv run pytest -v --durations=0 --cov
 ```
 
 Before pushing, ALWAYS run the full quality suite:
 ```bash
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ## Test Naming Convention

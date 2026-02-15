@@ -6,7 +6,7 @@ Modular rules live in `.claude/rules/` — each covers a specific concern.
 ## Project Overview
 
 **python-package-template** (v0.2.0) — a production-ready Python package
-template using Poetry, Ruff, Pyright, and pre-commit hooks. Licensed
+template using uv, Ruff, Pyright, and pre-commit hooks. Licensed
 Apache-2.0.
 
 ## Repository Structure
@@ -18,7 +18,7 @@ python_package_template/         # Main package source
 tests/
   test_init.py                  # Unit tests
 .github/
-  actions/setup-python-poetry/  # Reusable CI composite action
+  actions/setup-uv/            # Reusable CI composite action
   workflows/
     ci.yml                      # CI: lint + test matrix (3.10, 3.11, 3.12)
     release-and-tag.yml         # Release: auto-tag + GitHub Release on merge
@@ -46,12 +46,12 @@ pyproject.toml                  # Project config, deps, tool settings
 ## Quick Reference — Development Commands
 
 ```bash
-poetry install --no-interaction              # Install deps
-poetry run pytest -v --durations=0 --cov     # Run tests
-poetry run pre-commit run --all-files        # Lint + format + type check
-poetry run ruff check . --fix                # Ruff linter only
-poetry run ruff format .                     # Ruff formatter only
-poetry run pyright                           # Type checker only
+uv sync                                      # Install deps
+uv run pytest -v --durations=0 --cov         # Run tests
+uv run pre-commit run --all-files            # Lint + format + type check
+uv run ruff check . --fix                    # Ruff linter only
+uv run ruff format .                         # Ruff formatter only
+uv run pyright                               # Type checker only
 ```
 
 ## Development Lifecycle (TDD-First)
@@ -78,5 +78,5 @@ This project follows a strict TDD-first workflow. See
 - **Conventional Commits** — `feat`, `fix`, `test`, `refactor`, `docs`, `chore`
 - **79-char lines, 4-space indent, single quotes, Google docstrings**
 - **All functions need type hints and docstrings**
-- **Run `poetry run pre-commit run --all-files` before every push**
+- **Run `uv run pre-commit run --all-files` before every push**
 - **PR target: < 400 lines changed**

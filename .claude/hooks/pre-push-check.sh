@@ -13,19 +13,19 @@ if echo "$COMMAND" | grep -qE '^git push'; then
     echo "Running pre-push quality checks..." >&2
 
     # Run ruff format check
-    if ! poetry run ruff format --check . >/dev/null 2>&1; then
-        echo "BLOCKED: Ruff formatting check failed. Run 'poetry run ruff format .' first." >&2
+    if ! uv run ruff format --check . >/dev/null 2>&1; then
+        echo "BLOCKED: Ruff formatting check failed. Run 'uv run ruff format .' first." >&2
         exit 2
     fi
 
     # Run ruff lint check
-    if ! poetry run ruff check . >/dev/null 2>&1; then
-        echo "BLOCKED: Ruff lint check failed. Run 'poetry run ruff check . --fix' first." >&2
+    if ! uv run ruff check . >/dev/null 2>&1; then
+        echo "BLOCKED: Ruff lint check failed. Run 'uv run ruff check . --fix' first." >&2
         exit 2
     fi
 
     # Run tests
-    if ! poetry run pytest -x --tb=short -q 2>/dev/null; then
+    if ! uv run pytest -x --tb=short -q 2>/dev/null; then
         echo "BLOCKED: Tests are failing. Fix failing tests before pushing." >&2
         exit 2
     fi

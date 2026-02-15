@@ -1,11 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(poetry run pytest *)",
-      "Bash(poetry run ruff *)",
-      "Bash(poetry run ruff format *)",
-      "Bash(poetry run pyright *)",
-      "Bash(poetry run pre-commit *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run ruff format *)",
+      "Bash(uv run pyright *)",
+      "Bash(uv run pre-commit *)",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -27,7 +27,7 @@
       "Read(.env.*)",
       "Write(.env)",
       "Write(.env.*)",
-      "Write(poetry.lock)"
+      "Write(uv.lock)"
     ]
   },
   "hooks": {
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} sh -c 'case \"{}\" in *.py) cd \"$CLAUDE_PROJECT_DIR\" && poetry run ruff format \"{}\" 2>/dev/null && poetry run ruff check \"{}\" --fix 2>/dev/null; esac'",
+            "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} sh -c 'case \"{}\" in *.py) cd \"$CLAUDE_PROJECT_DIR\" && uv run ruff format \"{}\" 2>/dev/null && uv run ruff check \"{}\" --fix 2>/dev/null; esac'",
             "timeout": 15
           }
         ]
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && poetry run pytest -x --tb=line -q 2>/dev/null | tail -3",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && uv run pytest -x --tb=line -q 2>/dev/null | tail -3",
             "timeout": 30
           }
         ]

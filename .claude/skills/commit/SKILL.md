@@ -25,9 +25,9 @@ git log --oneline -5
 ### Step 2: Verify Quality
 Before committing, run the quality suite:
 ```bash
-poetry run pytest -x --tb=short -q
-poetry run ruff check .
-poetry run ruff format --check .
+uv run pytest -x --tb=short -q
+uv run ruff check .
+uv run ruff format --check .
 ```
 If any check fails, fix the issues first. Do NOT commit broken code.
 
@@ -39,7 +39,7 @@ git add <specific-files>
 
 Do NOT stage:
 - `.env` or credential files
-- `poetry.lock` (unless dependency changes are the point)
+- `uv.lock` (unless dependency changes are the point)
 - Unrelated changes
 
 ### Step 4: Write Commit Message

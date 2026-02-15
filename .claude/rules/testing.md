@@ -15,16 +15,16 @@ paths:
 
 ```bash
 # Full test suite with coverage
-poetry run pytest -v --durations=0 --cov --cov-report=xml
+uv run pytest -v --durations=0 --cov --cov-report=xml
 
 # Quick run (stop at first failure)
-poetry run pytest -x --tb=short
+uv run pytest -x --tb=short
 
 # Single test file
-poetry run pytest tests/test_init.py -v
+uv run pytest tests/test_init.py -v
 
 # Single test function
-poetry run pytest tests/test_init.py::test_add -v
+uv run pytest tests/test_init.py::test_add -v
 ```
 
 ## Test File Organization

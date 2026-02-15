@@ -52,7 +52,7 @@ def test_add_two_positive_integers_returns_sum():
 
 4. **Verify tests fail** (RED phase):
 ```bash
-poetry run pytest tests/ -x --tb=short -v
+uv run pytest tests/ -x --tb=short -v
 ```
 
 5. **Report** the test file, function names, and what each test covers.
