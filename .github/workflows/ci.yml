@@ -76,12 +76,27 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Run tests
-        run: uv run pytest -v --durations=0 --cov --cov-report=xml
+        run: uv run pytest -v --durations=0
+
+  # Dedicated coverage job — shows as its own PR status check.
+  # Enforces the minimum threshold from [tool.coverage.report] fail_under
+  # in pyproject.toml (currently 80%).
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
 
       # continue-on-error so CI passes in forks without a CODECOV_TOKEN secret
-      # Only upload from one Python version to avoid redundant uploads.
       - name: Upload Coverage to Codecov
-        if: matrix.python-version == '3.13'
         uses: codecov/codecov-action@v5
         continue-on-error: true
         with:

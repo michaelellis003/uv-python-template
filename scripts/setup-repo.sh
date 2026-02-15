@@ -68,6 +68,7 @@ gh api "repos/${REPO}/branches/main/protection" \
       { "context": "ruff-lint" },
       { "context": "ruff-format" },
       { "context": "pyright" },
+      { "context": "coverage" },
       { "context": "pytest (3.10)" },
       { "context": "pytest (3.11)" },
       { "context": "pytest (3.12)" },
@@ -86,6 +87,7 @@ echo "Required status checks:"
 echo "  - ruff-lint"
 echo "  - ruff-format"
 echo "  - pyright"
+echo "  - coverage (fail_under from pyproject.toml)"
 echo "  - pytest (3.10, 3.11, 3.12, 3.13)"
 if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
     echo ""

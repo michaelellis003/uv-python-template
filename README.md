@@ -203,7 +203,8 @@ Runs parallel jobs for fast feedback:
 - **Ruff Lint** — checks for code quality issues
 - **Ruff Format** — verifies consistent code formatting
 - **Pyright** — static type checking
-- **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13 with Codecov upload
+- **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13
+- **Coverage** — enforces minimum code coverage (`fail_under` in `pyproject.toml`) and uploads to Codecov
 - **Pytest macOS** — smoke test on macOS to catch platform-specific issues
 - **Pytest Windows** — smoke test on Windows to catch platform-specific issues
 

@@ -150,6 +150,7 @@ source = ["python_package_template"]
 branch = true
 
 [tool.coverage.report]
+# Minimum coverage required to pass. Enforced by the "coverage" CI job.
 fail_under = 80
 show_missing = true
 exclude_lines = [
