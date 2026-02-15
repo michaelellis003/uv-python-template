@@ -1,0 +1,70 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(poetry run pytest *)",
+      "Bash(poetry run ruff *)",
+      "Bash(poetry run ruff format *)",
+      "Bash(poetry run pyright *)",
+      "Bash(poetry run pre-commit *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Read(python_package_template/**)",
+      "Read(tests/**)",
+      "Read(pyproject.toml)",
+      "Read(.pre-commit-config.yaml)",
+      "Read(.python-versions)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git checkout . *)",
+      "Bash(git clean -f *)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Write(poetry.lock)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-files.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} sh -c 'case \"{}\" in *.py) cd \"$CLAUDE_PROJECT_DIR\" && poetry run ruff format \"{}\" 2>/dev/null && poetry run ruff check \"{}\" --fix 2>/dev/null; esac'",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && poetry run pytest -x --tb=line -q 2>/dev/null | tail -3",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
