@@ -6,6 +6,8 @@
       "Bash(uv run ruff format *)",
       "Bash(uv run pyright *)",
       "Bash(uv run pre-commit *)",
+      "Bash(uv run mkdocs *)",
+      "Bash(uv run --group docs mkdocs *)",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -15,7 +17,8 @@
       "Read(tests/**)",
       "Read(pyproject.toml)",
       "Read(.pre-commit-config.yaml)",
-      "Read(.github/workflows/ci.yml)"
+      "Read(.github/workflows/ci.yml)",
+      "Read(docs/**)"
     ],
     "deny": [
       "Bash(rm -rf *)",

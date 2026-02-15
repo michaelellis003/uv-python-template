@@ -29,6 +29,9 @@ coverage.xml
 # Coverage HTML reports
 htmlcov/
 
+# MkDocs build output
+site/
+
 # Virtual environments
 .venv
 

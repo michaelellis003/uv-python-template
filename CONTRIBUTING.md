@@ -46,6 +46,16 @@ uv run pyright                       # Type check
 uv run pre-commit run --all-files    # All checks at once
 ```
 
+## Documentation
+
+Preview documentation locally while developing:
+
+```bash
+uv run --group docs mkdocs serve     # Preview at http://127.0.0.1:8000
+```
+
+Docs are auto-deployed to GitHub Pages on merge to main.
+
 ## Keeping Tool Versions in Sync
 
 Ruff and Pyright versions are pinned in two places:

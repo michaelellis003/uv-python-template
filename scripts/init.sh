@@ -242,6 +242,9 @@ replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
 sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
 
+# --- GitHub Pages site URL (must run before generic name replacement) ---
+sedi "s|michaelellis003.github.io/uv-python-template|${GITHUB_OWNER}.github.io/${KEBAB_NAME}|g" mkdocs.yml
+
 # --- Package name (generic replacements last) ---
 # Replace python_package_template (snake_case — directory and import name)
 replace_all "s/python_package_template/${SNAKE_NAME}/g"

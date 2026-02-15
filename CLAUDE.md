@@ -29,6 +29,9 @@ tests/
   test_init.py                  # Package-level tests
   test_main.py                  # Unit tests for demo functions
   test_main_module.py           # Tests for __main__.py entry point
+docs/
+  index.md                     # Documentation landing page
+  api.md                       # Auto-generated API reference
 .github/
   actions/setup-uv/            # Reusable CI composite action
   CODEOWNERS                   # Default code ownership for reviews
@@ -38,6 +41,7 @@ tests/
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
     dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
+    docs.yml                    # Docs: build and deploy to GitHub Pages
     release.yml                 # Release: gated on CI, auto-version on merge to main
 .claude/
   settings.json                 # Claude Code project settings and hooks
@@ -67,6 +71,7 @@ scripts/
 .editorconfig                   # Editor settings for non-Python files
 .gitignore                      # Git ignore rules
 .pre-commit-config.yaml         # Pre-commit hook definitions
+mkdocs.yml                     # MkDocs documentation config
 pyproject.toml                  # Project config, deps, tool settings
 uv.lock                        # Locked dependency versions
 README.md                      # User documentation
@@ -85,6 +90,8 @@ uv run pre-commit run --all-files            # Lint + format + type check
 uv run ruff check . --fix                    # Ruff linter only
 uv run ruff format .                         # Ruff formatter only
 uv run pyright                               # Type checker only
+uv run --group docs mkdocs serve             # Local docs preview
+uv run --group docs mkdocs build --strict    # Build docs
 ```
 
 ## Development Lifecycle (TDD-First)

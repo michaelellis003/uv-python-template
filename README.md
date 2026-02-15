@@ -15,6 +15,7 @@ A production-ready template for starting new Python packages. Clone it, rename a
 - [Customizing the Template](#customizing-the-template)
 - [Development Workflow](#development-workflow)
 - [Using uv](#using-uv)
+- [Documentation](#documentation)
 - [CI/CD Workflows](#cicd-workflows)
 - [Project Structure](#project-structure)
 
@@ -160,6 +161,8 @@ uv run pre-commit run --all-files            # Run all quality checks
 uv run ruff check . --fix                    # Lint (with auto-fix)
 uv run ruff format .                         # Format code
 uv run pyright                               # Type check
+uv run --group docs mkdocs serve             # Local docs preview
+uv run --group docs mkdocs build --strict    # Build docs
 ```
 
 ### Managing Dependencies
@@ -192,6 +195,17 @@ Read more about [dependency management in uv](https://docs.astral.sh/uv/concepts
 
 Version bumping is handled automatically by `python-semantic-release` on merge to main. It reads conventional commit messages to determine the bump type: `feat:` triggers a minor bump, `fix:`/`perf:` triggers a patch bump, and `feat!:`/`BREAKING CHANGE` triggers a major bump. Do not manually bump the version in `pyproject.toml`.
 
+## Documentation
+
+This project uses [MkDocs](https://www.mkdocs.org/) with the [Material](https://squidfund.github.io/mkdocs-material/) theme for documentation. API reference is auto-generated from Google-style docstrings using [mkdocstrings](https://mkdocstrings.github.io/).
+
+```bash
+uv run --group docs mkdocs serve             # Preview at http://127.0.0.1:8000
+uv run --group docs mkdocs build --strict    # Build static site
+```
+
+Documentation is automatically deployed to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) on every push to `main`.
+
 ## CI/CD Workflows
 
 ### On Pull Request and Push to Main (`ci.yml`)
@@ -212,6 +226,11 @@ Runs parallel jobs for fast feedback:
 - **Tagging** — creates a git tag for the new version
 - **Building** — runs `uv build` to produce sdist and wheel
 - **Releasing** — creates a GitHub Release with the built artifacts and release notes
+
+### On Merge to Main (`docs.yml`)
+
+- **Build** — runs `mkdocs build --strict` to generate static documentation
+- **Deploy** — publishes to GitHub Pages using artifact-based deployment
 
 ### Publishing to PyPI
 
@@ -234,6 +253,9 @@ The release workflow includes a commented-out step for publishing to PyPI using 
 │   ├── test_init.py                # Package-level tests
 │   ├── test_main.py                # Unit tests for demo functions
 │   └── test_main_module.py         # Tests for __main__.py entry point
+├── docs/
+│   ├── index.md                    # Documentation landing page
+│   └── api.md                      # Auto-generated API reference
 ├── .github/
 │   ├── actions/setup-uv/           # Reusable CI composite action
 │   ├── CODEOWNERS                  # Default code ownership for reviews
@@ -243,6 +265,7 @@ The release workflow includes a commented-out step for publishing to PyPI using 
 │   └── workflows/
 │       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
 │       ├── dependabot-auto-merge.yml  # Auto-merge minor/patch Dependabot PRs
+│       ├── docs.yml                # Docs: build and deploy to GitHub Pages
 │       └── release.yml             # Gated on CI, auto-version + GitHub Release
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
@@ -255,6 +278,7 @@ The release workflow includes a commented-out step for publishing to PyPI using 
 ├── .editorconfig                   # Editor settings for non-Python files
 ├── .gitignore                      # Git ignore rules
 ├── .pre-commit-config.yaml         # Pre-commit hook definitions
+├── mkdocs.yml                      # MkDocs documentation config
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions
 ├── CHANGELOG.md                   # Release history
