@@ -66,6 +66,12 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
     uv run pytest -v --durations=0 --cov
     ```
 
+5. Configure branch protection (requires `gh` CLI and repo admin access):
+    ```bash
+    ./scripts/setup-repo.sh
+    ```
+    This enables required CI status checks on `main`, which is needed for Dependabot auto-merge to work correctly.
+
 ## Customizing the Template
 
 After cloning, update these files to match your project:
@@ -81,7 +87,7 @@ After cloning, update these files to match your project:
 | Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
-| Branch protection | Enable on `main` — require status checks: `ruff-lint`, `ruff-format`, `pyright`, `pytest` (needed for Dependabot auto-merge) |
+| Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks (needed for Dependabot auto-merge) |
 
 The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
 
@@ -189,6 +195,8 @@ Runs four parallel jobs for fast feedback:
 │   ├── rules/                      # Development standards
 │   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
 │   └── agents/                     # Specialized subagents
+├── scripts/
+│   └── setup-repo.sh               # One-time repo setup (branch protection)
 ├── .editorconfig                   # Editor settings for non-Python files
 ├── pyproject.toml                  # Project config, deps, tool settings
 ├── uv.lock                        # Locked dependency versions

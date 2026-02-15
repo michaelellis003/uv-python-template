@@ -49,6 +49,8 @@ tests/
   agents/
     code-reviewer.md            # Code review subagent
     test-writer.md              # Test-first subagent
+scripts/
+  setup-repo.sh                  # One-time repo setup (branch protection)
 .editorconfig                   # Editor settings for non-Python files
 pyproject.toml                  # Project config, deps, tool settings
 .pre-commit-config.yaml         # Pre-commit hook definitions
