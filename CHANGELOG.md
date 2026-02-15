@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-02-15)
+
+### Features
+
+- **docs**: Add MkDocs documentation with GitHub Pages deployment
+  ([`cd3a89f`](https://github.com/michaelellis003/uv-python-template/commit/cd3a89fa6831f16adb3a64223d3151ae9a8baaa6))
+
+
 ## v1.4.2 (2026-02-15)
 
 ### Bug Fixes
