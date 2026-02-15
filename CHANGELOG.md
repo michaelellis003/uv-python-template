@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-02-15)
+
+### Documentation
+
+- **rules**: Add design principles rule file
+  ([`67ab2c7`](https://github.com/michaelellis003/uv-python-template/commit/67ab2c78c66369a2e76c3566140e2a980322aef7))
+
+- **rules**: Add error handling and Python idioms rule files
+  ([`3463ea7`](https://github.com/michaelellis003/uv-python-template/commit/3463ea774763c2400842939e58021c24d2c08d26))
+
+### Features
+
+- **onboarding**: Add interactive init script for template setup
+  ([`369c807`](https://github.com/michaelellis003/uv-python-template/commit/369c807d02e92ef333d1c3e3a813280cbef7831b))
+
+
 ## v1.1.2 (2026-02-15)
 
 ### Bug Fixes
