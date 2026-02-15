@@ -1,3 +1,6 @@
+# Requires branch protection on main with required status checks
+# (ruff-lint, ruff-format, pyright, pytest) so --auto waits for CI.
+# Without branch protection, --auto merges immediately.
 name: Dependabot Auto-Merge
 on: pull_request
 

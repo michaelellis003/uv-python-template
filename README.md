@@ -81,6 +81,7 @@ After cloning, update these files to match your project:
 | Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
+| Branch protection | Enable on `main` — require status checks: `ruff-lint`, `ruff-format`, `pyright`, `pytest` (needed for Dependabot auto-merge) |
 
 The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
 
