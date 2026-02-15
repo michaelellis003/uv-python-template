@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v1.4.0 (2026-02-15)
+
+### Features
+
+- **ci**: Add dedicated coverage CI job as required PR check
+  ([`eed184d`](https://github.com/michaelellis003/uv-python-template/commit/eed184d48b9b104304a8e6313973a154d77d5c31))
+
+- **template**: Improve template with review findings
+  ([`29e3b10`](https://github.com/michaelellis003/uv-python-template/commit/29e3b101a3d36ab459f48f38242d69ab5c5eee92))
+
+
 ## v1.3.0 (2026-02-15)
 
 ### Bug Fixes
