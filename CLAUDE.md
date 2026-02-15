@@ -22,14 +22,17 @@ python_package_template/         # Main package source
   main.py                       # Core module with demo functions
   py.typed                      # PEP 561 type checking marker
 tests/
+  conftest.py                  # Shared test fixtures
   test_init.py                  # Unit tests
 .github/
   actions/setup-uv/            # Reusable CI composite action
+  dependabot.yml               # Automated dependency updates
   ISSUE_TEMPLATE/              # Bug report & feature request forms
   PULL_REQUEST_TEMPLATE.md     # PR checklist template
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
-    release.yml                 # Release: python-semantic-release on merge to main
+    dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
+    release.yml                 # Release: gated on CI, auto-version on merge to main
 .claude/
   settings.json                 # Claude Code project settings and hooks
   rules/                        # Modular instructions by topic

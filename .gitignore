@@ -11,6 +11,13 @@ wheels/
 coverage.xml
 .DS_Store
 
+# Environment variables
+.env
+.env.*
+
+# Coverage HTML reports
+htmlcov/
+
 # Virtual environments
 .venv
 

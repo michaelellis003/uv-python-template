@@ -42,14 +42,14 @@ def subtract(a: int, b: int) -> int:
     return a - b
 
 
-def multiply(a: float, b: int) -> float:
-    """Multiply a float by an integer.
+def multiply(a: float, b: float) -> float:
+    """Multiply two numbers.
 
     Args:
-        a (float): The float number.
-        b (int): The integer number.
+        a (float): The first number.
+        b (float): The second number.
 
     Returns:
-        float: The product of the float and the integer.
+        float: The product of the two numbers.
     """
     return a * b

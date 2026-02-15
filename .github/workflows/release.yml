@@ -1,7 +1,9 @@
 name: Release
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
     branches: [main]
+    types: [completed]
 
 permissions:
   contents: write
@@ -13,8 +15,10 @@ concurrency:
 
 jobs:
   release:
-    # Skip release commits from semantic-release to prevent infinite loops
-    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    # Only release when CI passes; skip semantic-release's own commits
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+      && !contains(github.event.workflow_run.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,12 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --locked
+        uses: ./.github/actions/setup-uv
 
       - name: Configure git
         run: |

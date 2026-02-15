@@ -76,6 +76,8 @@ select = [
     "S",
     # flake8-pytest-style
     "PT",
+    # Pylint refactoring rules
+    "PLR",
     # Ruff-specific rules
     "RUF",
 ]

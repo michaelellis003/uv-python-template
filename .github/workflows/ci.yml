@@ -78,6 +78,7 @@ jobs:
       - name: Run tests
         run: uv run pytest -v --durations=0 --cov --cov-report=xml
 
+      # continue-on-error so CI passes in forks without a CODECOV_TOKEN secret
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         continue-on-error: true
