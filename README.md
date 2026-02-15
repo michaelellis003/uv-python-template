@@ -104,6 +104,7 @@ This handles the package rename, author info, GitHub URLs, version reset, and ch
 | Set up Codecov | Add `CODECOV_TOKEN` secret in GitHub repo settings and add badge to `README.md` |
 | Update license | `LICENSE` — update copyright holder if needed |
 | Update Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
+| Enable GitHub Pages | Repo **Settings > Pages > Source**: select **GitHub Actions** |
 | Configure branch protection | Run `./scripts/setup-repo.sh` (requires `gh` CLI and admin access) |
 | Update keywords | `pyproject.toml` — `keywords` field (reset to empty by init script) |
 
@@ -123,6 +124,7 @@ If you prefer to customize manually, update these references:
 | Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
 | Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
 | Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
+| Enable GitHub Pages | Repo **Settings > Pages > Source**: select **GitHub Actions** |
 | Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks |
 
 </details>
@@ -205,6 +207,12 @@ uv run --group docs mkdocs build --strict    # Build static site
 ```
 
 Documentation is automatically deployed to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) on every push to `main`.
+
+To enable GitHub Pages for your repository:
+
+1. Go to **Settings > Pages**
+2. Under **Build and deployment > Source**, select **GitHub Actions**
+3. Push to `main` — the `docs.yml` workflow will build and deploy automatically
 
 ## CI/CD Workflows
 
