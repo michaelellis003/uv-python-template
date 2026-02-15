@@ -38,6 +38,7 @@ tests/
   rules/                        # Modular instructions by topic
     tdd-workflow.md             # TDD Red-Green-Refactor lifecycle
     code-style.md               # Formatting, linting, docstrings
+    design-principles.md        # KISS, YAGNI, SOLID, composition, SoC, least astonishment
     git-conventions.md          # Branching, commits, PR workflow
     testing.md                  # Test structure and conventions
   skills/                       # Custom slash commands
@@ -95,6 +96,8 @@ This project follows a strict TDD-first workflow. See
 
 ## Key Rules
 
+- **Design principles** — KISS, YAGNI, SOLID, composition over
+  inheritance, separation of concerns, least astonishment
 - **Always write tests before implementation** (TDD)
 - **Conventional Commits** — `feat`, `fix`, `test`, `refactor`, `docs`, `chore`
 - **79-char lines, 4-space indent, single quotes, Google docstrings**
