@@ -31,6 +31,7 @@ tests/
   PULL_REQUEST_TEMPLATE.md     # PR checklist template
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
+    dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
     release.yml                 # Release: gated on CI, auto-version on merge to main
 .claude/
   settings.json                 # Claude Code project settings and hooks

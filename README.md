@@ -181,6 +181,7 @@ Runs four parallel jobs for fast feedback:
 │   ├── PULL_REQUEST_TEMPLATE.md    # PR checklist template
 │   └── workflows/
 │       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
+│       ├── dependabot-auto-merge.yml  # Auto-merge minor/patch Dependabot PRs
 │       └── release.yml             # Gated on CI, auto-version + GitHub Release
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
