@@ -142,12 +142,26 @@ else
     fail "README.md still references init.sh"
 fi
 
+# Package name replaced in pyproject.toml
+if grep -q "test_pkg" pyproject.toml; then
+    pass "pyproject.toml references test_pkg"
+else
+    fail "pyproject.toml missing test_pkg reference"
+fi
+
 # License classifier updated (when license != none)
 if [ "$LICENSE" != "none" ]; then
     if ! grep -q 'Apache Software License' pyproject.toml; then
-        pass "License classifier updated"
+        pass "License classifier updated (Apache removed)"
     else
         fail "License classifier still says Apache"
+    fi
+
+    # Verify the correct classifier is present
+    if grep -q 'MIT License' pyproject.toml; then
+        pass "License classifier correct (MIT License)"
+    else
+        fail "Expected 'MIT License' classifier in pyproject.toml"
     fi
 fi
 
@@ -168,12 +182,6 @@ fi
 
 # License-specific checks
 if [ "$LICENSE" != "none" ]; then
-    if grep -q "test_pkg" pyproject.toml; then
-        pass "pyproject.toml references test_pkg"
-    else
-        fail "pyproject.toml missing test_pkg reference"
-    fi
-
     if [ -f "LICENSE_HEADER" ]; then
         pass "LICENSE_HEADER exists"
     else

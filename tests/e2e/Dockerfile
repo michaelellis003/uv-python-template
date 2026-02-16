@@ -11,7 +11,8 @@ RUN if command -v apk > /dev/null 2>&1; then \
     fi
 
 # Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+# Keep version in sync with .pre-commit-config.yaml (uv-pre-commit rev).
+COPY --from=ghcr.io/astral-sh/uv:0.7.12 /uv /uvx /usr/local/bin/
 
 # Configure git (needed for pre-commit and init validation)
 RUN git config --global user.email "e2e@test.com" && \

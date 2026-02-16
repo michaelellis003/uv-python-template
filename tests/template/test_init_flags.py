@@ -320,6 +320,46 @@ def test_init_description_with_double_quotes_produces_valid_toml(
 
 @pytest.mark.integration
 @pytest.mark.slow
+def test_init_empty_description_noninteractive_exits_with_error(
+    tmp_path: Path,
+    template_dir: Path,
+):
+    """Test that init.sh rejects empty description in non-interactive mode."""
+    project, init_script = _setup_project(tmp_path, template_dir)
+
+    result = subprocess.run(
+        [
+            str(init_script),
+            '--name',
+            'test-pkg',
+            '--author',
+            'Test Author',
+            '--email',
+            'test@example.com',
+            '--github-owner',
+            'testowner',
+            '--description',
+            '',
+            '--license',
+            'none',
+        ],
+        cwd=str(project),
+        input='',
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+    assert result.returncode != 0, (
+        f'Expected non-zero exit code, got {result.returncode}'
+    )
+    assert 'required' in result.stderr, (
+        f'Expected "required" in stderr, got: {result.stderr}'
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.slow
 def test_init_description_with_backslash_produces_valid_toml(
     tmp_path: Path,
     template_dir: Path,

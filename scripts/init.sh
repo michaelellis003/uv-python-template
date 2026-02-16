@@ -357,11 +357,7 @@ validate_github_owner "$GITHUB_OWNER" || exit 1
 GITHUB_REPO="${GITHUB_OWNER}/${KEBAB_NAME}"
 
 # Description
-if [[ -z "$DESCRIPTION" ]]; then
-    printf "${BOLD}Short description${NC} (one line): "
-    read -r DESCRIPTION
-fi
-DESCRIPTION=$(trim "$DESCRIPTION")
+prompt_required DESCRIPTION "Short description (one line)" "--description"
 if [[ "$DESCRIPTION" == *$'\n'* || "$DESCRIPTION" == *$'\r'* ]]; then
     error "Description must be a single line."
     exit 1
