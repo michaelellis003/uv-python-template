@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.7.3 (2026-02-16)
+
+### Bug Fixes
+
+- **init**: Prevent awk backslash interpretation in description
+  ([`d1d58fd`](https://github.com/michaelellis003/uv-python-template/commit/d1d58fdcb645f7db7238e4af67e152525e6bce1a))
+
+
 ## v1.7.2 (2026-02-16)
 
 ### Bug Fixes
