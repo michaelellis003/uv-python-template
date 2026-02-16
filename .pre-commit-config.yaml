@@ -9,6 +9,7 @@ repos:
       - id: check-merge-conflict
       - id: check-json
       - id: check-yaml
+        exclude: ^recipe/meta\.yaml$
       - id: check-toml
       - id: debug-statements
       - id: detect-private-key

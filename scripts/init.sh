@@ -141,6 +141,11 @@ if [[ ! -d "python_package_template" ]]; then
     exit 1
 fi
 
+if ! command -v python3 &>/dev/null; then
+    error "python3 is required but not found. Please install Python 3."
+    exit 1
+fi
+
 # ---------------------------------------------------------------------------
 # Parse arguments
 # ---------------------------------------------------------------------------
@@ -506,6 +511,11 @@ if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
     # Update pyproject.toml license field
     sedi "s|license = {text = \"Apache-2.0\"}|license = {text = \"${LICENSE_SPDX}\"}|" pyproject.toml
 
+    # Update conda-forge recipe license field
+    if [[ -f recipe/meta.yaml ]]; then
+        sedi "s|license: Apache-2.0|license: ${LICENSE_SPDX}|" recipe/meta.yaml
+    fi
+
     # Generate LICENSE_HEADER for the insert-license pre-commit hook
     cat > LICENSE_HEADER << HEADER_EOF
 Copyright ${CURRENT_YEAR} ${AUTHOR_NAME}
@@ -722,7 +732,11 @@ fi
 # ---------------------------------------------------------------------------
 
 echo ""
-ok "Project initialized successfully!"
+if [[ "$VALIDATION_OK" == "true" ]]; then
+    ok "Project initialized successfully!"
+else
+    warn "Project initialized with warnings (see above)."
+fi
 echo ""
 echo "  Package directory:  ${SNAKE_NAME}/"
 echo "  Package name:       ${KEBAB_NAME}"

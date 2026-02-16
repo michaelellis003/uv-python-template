@@ -125,6 +125,7 @@ jobs:
         run: uv lock --check
 
   # Smoke tests on macOS and Windows to catch platform-specific issues.
+  # Skip slow integration tests (they require network access to GitHub API).
   pytest-macos:
     runs-on: macos-latest
     timeout-minutes: 15
@@ -138,7 +139,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run tests
-        run: uv run pytest -v --durations=0
+        run: uv run pytest -v --durations=0 -m 'not integration'
 
   pytest-windows:
     runs-on: windows-latest
@@ -153,7 +154,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run tests
-        run: uv run pytest -v --durations=0
+        run: uv run pytest -v --durations=0 -m 'not integration'
 
   # Build validation — ensures the package builds cleanly and installs correctly.
   build:
@@ -183,7 +184,7 @@ jobs:
           print(name.replace('-', '_'))
           ")
           uv venv /tmp/test-install
-          /tmp/test-install/bin/pip install dist/*.whl
+          VIRTUAL_ENV=/tmp/test-install uv pip install dist/*.whl
           /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"
 
   # Gate job — single required check for branch protection.

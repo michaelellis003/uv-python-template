@@ -64,6 +64,14 @@ class TestLicenseMit:
         pyproject = (self.project / 'pyproject.toml').read_text()
         assert 'license = {text = "MIT"}' in pyproject
 
+    def test_init_license_mit_updates_meta_yaml_license(self):
+        """Test that recipe/meta.yaml has MIT license."""
+        meta_yaml = self.project / 'recipe' / 'meta.yaml'
+        assert meta_yaml.exists(), 'recipe/meta.yaml not found'
+        content = meta_yaml.read_text()
+        assert 'license: MIT' in content
+        assert 'license: Apache-2.0' not in content
+
 
 # ------------------------------------------------------------------
 # --license none
@@ -94,6 +102,13 @@ class TestLicenseNone:
         """Test that .pre-commit-config.yaml has no insert-license."""
         config = (self.project / '.pre-commit-config.yaml').read_text()
         assert 'insert-license' not in config
+
+    def test_init_license_none_keeps_meta_yaml_license(self):
+        """Test that recipe/meta.yaml keeps Apache-2.0 license."""
+        meta_yaml = self.project / 'recipe' / 'meta.yaml'
+        assert meta_yaml.exists(), 'recipe/meta.yaml not found'
+        content = meta_yaml.read_text()
+        assert 'license: Apache-2.0' in content
 
     def test_init_license_none_no_spdx_headers(self):
         """Test that no .py files have SPDX headers."""
