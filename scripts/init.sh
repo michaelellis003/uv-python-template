@@ -827,11 +827,14 @@ sedi "s|Apache-2.0 license (configurable via init.sh)|${LICENSE_SPDX} license|" 
 sedi "s|Apache-2.0 license (configurable via init.sh)|${LICENSE_SPDX} license|" CLAUDE.md
 
 # Strip template-only content from CLAUDE.md
-awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" -v lic="${LICENSE_SPDX}" '
+# Use ENVIRON[] instead of -v to avoid awk interpreting backslash escapes
+# in user-provided DESCRIPTION (e.g. \t, \n in "C:\temp" or "\d+").
+KEBAB_NAME="${KEBAB_NAME}" DESCRIPTION="${DESCRIPTION}" LICENSE_SPDX="${LICENSE_SPDX}" \
+awk '
 /<!-- TEMPLATE-ONLY-START -->/ {
     skip = 1
-    printf "**%s** — %s. Uses uv, Ruff, Pyright, and pre-commit\n", name, desc
-    printf "hooks. Licensed %s.\n", lic
+    printf "**%s** — %s. Uses uv, Ruff, Pyright, and pre-commit\n", ENVIRON["KEBAB_NAME"], ENVIRON["DESCRIPTION"]
+    printf "hooks. Licensed %s.\n", ENVIRON["LICENSE_SPDX"]
     next
 }
 /<!-- TEMPLATE-ONLY-END -->/ { skip = 0; next }
@@ -892,7 +895,7 @@ fi
 # Check for stale template references in tracked files
 STALE_REFS=$(grep -rl 'python_package_template\|python-package-template' \
     --include='*.py' --include='*.toml' --include='*.yml' --include='*.yaml' \
-    --include='*.md' --include='*.cfg' --include='*.json' \
+    --include='*.md' --include='*.cfg' --include='*.json' --include='*.sh' \
     . 2>/dev/null \
     | grep -v '.git/' \
     | grep -v 'uv.lock' \
