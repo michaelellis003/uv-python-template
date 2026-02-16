@@ -18,6 +18,12 @@
 
 set -euo pipefail
 
+# Ensure sed can handle UTF-8 content on macOS (prevents "illegal byte
+# sequence" errors when processing files with non-ASCII characters).
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export LC_ALL=en_US.UTF-8
+fi
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -37,6 +43,29 @@ error() { printf "${RED}error:${NC} %s\n" "$*" >&2; }
 to_snake() { echo "$1" | tr '-' '_'; }
 to_kebab() { echo "$1" | tr '_' '-'; }
 to_title() { echo "$1" | tr '-' ' ' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1'; }
+trim()     { printf '%s' "$1" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'; }
+
+# Prompt for a required input with retry loop.
+# Errors and exits if stdin is not a terminal (non-interactive).
+# Usage: prompt_required VARIABLE_NAME "Prompt text" "--flag-name"
+prompt_required() {
+    local var_name="$1" prompt="$2" flag="$3"
+    local value="${!var_name}"
+    value=$(trim "$value")
+    while [[ -z "$value" ]]; do
+        if [[ ! -t 0 ]]; then
+            error "${prompt} is required (use ${flag} in non-interactive mode)"
+            exit 1
+        fi
+        printf "${BOLD}%s${NC}: " "$prompt"
+        read -r value
+        value=$(trim "$value")
+        if [[ -z "$value" ]]; then
+            warn "${prompt} cannot be empty."
+        fi
+    done
+    eval "${var_name}=\"\${value}\""
+}
 
 require_arg() {
     local flag="$1"
@@ -64,9 +93,16 @@ sedi() {
 # Replace a sed pattern across all tracked project files
 replace_all() {
     local pattern="$1"
+    local failed=false
     while IFS= read -r file; do
-        sedi "$pattern" "$file" 2>/dev/null || true
+        if ! sedi "$pattern" "$file"; then
+            warn "sed failed on: $file"
+            failed=true
+        fi
     done <<< "$FILES_TO_UPDATE"
+    if [[ "$failed" == "true" ]]; then
+        return 1
+    fi
 }
 
 # Validate a package name: lowercase, starts with letter, only [a-z0-9-_]
@@ -79,6 +115,54 @@ validate_name() {
     fi
     if [[ "$name" == "python-package-template" || "$name" == "python_package_template" ]]; then
         error "Please choose a name other than the template default."
+        return 1
+    fi
+    # Reject names that shadow common Python stdlib modules
+    local snake
+    snake=$(to_snake "$name")
+    local stdlib_names
+    stdlib_names=" abc ast asyncio base64 collections contextlib copy csv "
+    stdlib_names+="dataclasses datetime decimal enum functools hashlib http "
+    stdlib_names+="importlib inspect io itertools json logging math "
+    stdlib_names+="multiprocessing operator os pathlib pickle platform "
+    stdlib_names+="pprint queue random re secrets shutil signal socket "
+    stdlib_names+="sqlite3 string struct subprocess sys test textwrap "
+    stdlib_names+="threading time tomllib typing unittest uuid warnings "
+    stdlib_names+="xml zipfile "
+    if [[ "$stdlib_names" == *" ${snake} "* ]]; then
+        error "Package name '${name}' would shadow the Python stdlib module '${snake}'."
+        echo "  Choose a different name to avoid import conflicts."
+        return 1
+    fi
+}
+
+# Validate a GitHub username or organization name
+validate_author_name() {
+    local name="$1"
+    if [[ "$name" == *$'\n'* || "$name" == *$'\r'* ]]; then
+        error "Author name must be a single line."
+        return 1
+    fi
+}
+
+validate_email() {
+    local email="$1"
+    if [[ ! "$email" == *@* ]]; then
+        error "Invalid email: '${email}' (must contain @)"
+        return 1
+    fi
+    if [[ "$email" == *$'\n'* || "$email" == *$'\r'* ]]; then
+        error "Email must be a single line."
+        return 1
+    fi
+}
+
+validate_github_owner() {
+    local owner="$1"
+    if [[ ! "$owner" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]]; then
+        error "Invalid GitHub owner: '${owner}'"
+        echo "  Must contain only alphanumeric characters or hyphens,"
+        echo "  and cannot begin or end with a hyphen."
         return 1
     fi
 }
@@ -248,10 +332,7 @@ echo "reset the version and changelog, and prepare your project."
 echo ""
 
 # Project name
-if [[ -z "$PROJECT_NAME" ]]; then
-    printf "${BOLD}Package name${NC} (kebab-case, e.g. my-cool-package): "
-    read -r PROJECT_NAME
-fi
+prompt_required PROJECT_NAME "Package name (kebab-case, e.g. my-cool-package)" "--name"
 
 KEBAB_NAME=$(to_kebab "$PROJECT_NAME")
 SNAKE_NAME=$(to_snake "$PROJECT_NAME")
@@ -260,21 +341,14 @@ TITLE_NAME=$(to_title "$KEBAB_NAME")
 validate_name "$KEBAB_NAME" || exit 1
 
 # Author
-if [[ -z "$AUTHOR_NAME" ]]; then
-    printf "${BOLD}Author name${NC} (e.g. Jane Smith): "
-    read -r AUTHOR_NAME
-fi
-
-if [[ -z "$AUTHOR_EMAIL" ]]; then
-    printf "${BOLD}Author email${NC}: "
-    read -r AUTHOR_EMAIL
-fi
+prompt_required AUTHOR_NAME "Author name (e.g. Jane Smith)" "--author"
+validate_author_name "$AUTHOR_NAME" || exit 1
+prompt_required AUTHOR_EMAIL "Author email" "--email"
+validate_email "$AUTHOR_EMAIL" || exit 1
 
 # GitHub
-if [[ -z "$GITHUB_OWNER" ]]; then
-    printf "${BOLD}GitHub owner${NC} (username or org): "
-    read -r GITHUB_OWNER
-fi
+prompt_required GITHUB_OWNER "GitHub owner (username or org)" "--github-owner"
+validate_github_owner "$GITHUB_OWNER" || exit 1
 
 GITHUB_REPO="${GITHUB_OWNER}/${KEBAB_NAME}"
 
@@ -282,6 +356,11 @@ GITHUB_REPO="${GITHUB_OWNER}/${KEBAB_NAME}"
 if [[ -z "$DESCRIPTION" ]]; then
     printf "${BOLD}Short description${NC} (one line): "
     read -r DESCRIPTION
+fi
+DESCRIPTION=$(trim "$DESCRIPTION")
+if [[ "$DESCRIPTION" == *$'\n'* || "$DESCRIPTION" == *$'\r'* ]]; then
+    error "Description must be a single line."
+    exit 1
 fi
 
 # Escape description for use in sed replacements
@@ -412,7 +491,8 @@ info "Updating package name references..."
 # Order matters: replace the longer/more specific patterns first
 # so shorter patterns don't break longer matches.
 
-# Files to update (excludes .git, caches, venv, lockfile, and this script)
+# Files to update (excludes .git, caches, venv, lockfile, build artifacts,
+# binary files, and this script)
 FILES_TO_UPDATE=$(find . \
     -not -path './.git/*' \
     -not -path './.venv/*' \
@@ -420,9 +500,24 @@ FILES_TO_UPDATE=$(find . \
     -not -path './.pytest_cache/*' \
     -not -path './*__pycache__*' \
     -not -path './tests/template/*' \
+    -not -path './site/*' \
+    -not -path './dist/*' \
+    -not -path './build/*' \
     -not -path './uv.lock' \
     -not -path './CHANGELOG.md' \
     -not -name 'init.sh' \
+    -not -name '.coverage' \
+    -not -name '*.png' \
+    -not -name '*.jpg' \
+    -not -name '*.gif' \
+    -not -name '*.ico' \
+    -not -name '*.gz' \
+    -not -name '*.zip' \
+    -not -name '*.whl' \
+    -not -name '*.tar' \
+    -not -name '*.inv' \
+    -not -name '*.so' \
+    -not -name '*.dylib' \
     -type f \
     -print)
 
@@ -431,8 +526,10 @@ replace_all "s|michaelellis003/python-package-template|${GITHUB_REPO}|g"
 replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 
 # --- Author information ---
-sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
-sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
+AUTHOR_NAME_SED=$(escape_sed_replacement "$AUTHOR_NAME")
+AUTHOR_EMAIL_SED=$(escape_sed_replacement "$AUTHOR_EMAIL")
+sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME_SED}\"/" pyproject.toml
+sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL_SED}\"|" pyproject.toml
 
 # --- CODEOWNERS ---
 sedi "s|@michaelellis003|@${GITHUB_OWNER}|g" .github/CODEOWNERS
@@ -529,8 +626,8 @@ VALIDATION_OK=true
 if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
     info "Setting up license (${LICENSE_SPDX})..."
 
-    # Fetch and write the LICENSE file
-    LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR")
+    # Fetch and write the LICENSE file (|| true: API failure is handled below)
+    LICENSE_BODY=$(fetch_license_body "$LICENSE_KEY" "$AUTHOR_NAME" "$CURRENT_YEAR") || true
     if [[ -n "$LICENSE_BODY" ]]; then
         printf '%s\n' "$LICENSE_BODY" > LICENSE
         ok "LICENSE file updated."
@@ -852,6 +949,9 @@ if [[ -d "tests/e2e" ]]; then
     sedi '/\.dockerignore.*# Docker build/d' CLAUDE.md
     sedi '/run-e2e\.sh/d' CLAUDE.md
 
+    # Remove E2E section from README.md (from header to next ### heading)
+    awk '/^### On Push to Main and Pull Request.*e2e/{skip=1; next} /^###/{skip=0} !skip{print}' README.md > README.md.tmp && mv README.md.tmp README.md
+
     ok "E2E test suite removed."
 fi
 
@@ -931,6 +1031,7 @@ if [[ "$VALIDATION_OK" == "true" ]]; then
     ok "Project initialized successfully!"
 else
     warn "Project initialized with warnings (see above)."
+    exit 1
 fi
 echo ""
 echo "  Package directory:  ${SNAKE_NAME}/"

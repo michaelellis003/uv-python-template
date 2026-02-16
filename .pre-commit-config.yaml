@@ -17,14 +17,14 @@ repos:
       - id: trailing-whitespace
   # Keep rev in sync with ruff version in pyproject.toml [dependency-groups].
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.7
+    rev: v0.15.1
     hooks:
       - id: ruff
         args: [ --fix ]
       - id: ruff-format
   # Keep rev in sync with pyright version in pyproject.toml [dependency-groups].
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.394
+    rev: v1.1.408
     hooks:
       - id: pyright
   - repo: https://github.com/compilerla/conventional-pre-commit

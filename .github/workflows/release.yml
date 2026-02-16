@@ -20,9 +20,10 @@ jobs:
     # Only release when CI passes; skip semantic-release's own commits.
     # head_commit can be null on workflow_dispatch or some fork triggers.
     if: >-
-      github.event.workflow_run.conclusion == 'success'
-      && (github.event.workflow_run.head_commit == null
-        || !contains(github.event.workflow_run.head_commit.message, 'chore(release):'))
+      github.event_name == 'workflow_dispatch'
+      || (github.event.workflow_run.conclusion == 'success'
+        && (github.event.workflow_run.head_commit == null
+          || !contains(github.event.workflow_run.head_commit.message, 'chore(release):')))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,16 +41,29 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Semantic Release Version
+        id: version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: uv run semantic-release version
+        run: |
+          BEFORE=$(grep '^version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          uv run semantic-release version
+          AFTER=$(grep '^version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          if [[ "$BEFORE" != "$AFTER" ]]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$AFTER" >> "$GITHUB_OUTPUT"
+          else
+            echo "No version bump detected — skipping publish."
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Semantic Release Publish
+        if: steps.version.outputs.released == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run semantic-release publish
 
       - name: Validate package metadata
+        if: steps.version.outputs.released == 'true'
         run: uvx twine check dist/*
 
       # To publish to PyPI using trusted publishing (OIDC):
@@ -64,12 +78,14 @@ jobs:
       #
       # PYPI-START
       # - name: Publish to PyPI
+      #   if: steps.version.outputs.released == 'true'
       #   uses: pypa/gh-action-pypi-publish@release/v1
       #   with:
       #     packages-dir: dist/
       #     attestations: true
       #
       # - name: Attest build provenance
+      #   if: steps.version.outputs.released == 'true'
       #   uses: actions/attest-build-provenance@v2
       #   with:
       #     subject-path: dist/*

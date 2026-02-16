@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-# Directories to exclude when copying the repo to a tmpdir
+# Directories/files to exclude when copying the repo to a tmpdir
 _EXCLUDE_DIRS = {
     '.git',
     '.venv',
@@ -18,6 +18,10 @@ _EXCLUDE_DIRS = {
     '.pytest_cache',
     '__pycache__',
     'node_modules',
+    'site',
+    'dist',
+    'build',
+    '.coverage',
 }
 
 

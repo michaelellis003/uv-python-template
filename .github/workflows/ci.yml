@@ -183,6 +183,10 @@ jobs:
               name = tomllib.load(f)['project']['name']
           print(name.replace('-', '_'))
           ")
+          if [[ -z "$PACKAGE_NAME" ]]; then
+            echo "::error::Failed to extract package name from pyproject.toml"
+            exit 1
+          fi
           uv venv /tmp/test-install
           VIRTUAL_ENV=/tmp/test-install uv pip install dist/*.whl
           /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"

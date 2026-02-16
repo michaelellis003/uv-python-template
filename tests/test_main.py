@@ -47,16 +47,16 @@ def test_subtract_larger_subtrahend_returns_negative():
     assert subtract(1, 5) == -4
 
 
-def test_multiply_two_floats_returns_product():
-    """Test that multiply returns the product of two floats."""
-    assert multiply(2.5, 2.0) == 5.0
+def test_multiply_two_positive_integers_returns_product():
+    """Test that multiply returns the product of two positive integers."""
+    assert multiply(3, 4) == 12
 
 
 def test_multiply_by_zero_returns_zero():
     """Test that multiply returns zero when one operand is zero."""
-    assert multiply(3.14, 0.0) == 0.0
+    assert multiply(5, 0) == 0
 
 
-def test_multiply_negative_float_returns_correct_product():
-    """Test that multiply handles negative floats correctly."""
-    assert multiply(-2.5, 3.0) == -7.5
+def test_multiply_negative_integer_returns_correct_product():
+    """Test that multiply handles negative integers correctly."""
+    assert multiply(-3, 4) == -12
