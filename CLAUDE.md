@@ -33,6 +33,10 @@ tests/
     conftest.py                # Fixtures: template_dir, init_project
     test_template_structure.py  # Verifies template ships clean
     test_init_license.py        # Integration tests for init.sh license setup
+  e2e/                          # Docker-based end-to-end tests
+    Dockerfile                  # Parameterized base image (ARG BASE_IMAGE)
+    verify-project.sh           # Container-side: init.sh + full verification
+    run-e2e.sh                  # Host-side orchestrator: matrix runner
 docs/
   index.md                     # Documentation landing page
   api.md                       # Auto-generated API reference
@@ -45,6 +49,7 @@ docs/
   PULL_REQUEST_TEMPLATE.md     # PR checklist template
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
+    e2e.yml                     # E2E: Docker-based init.sh + full project verification
     dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
     docs.yml                    # Docs: build and deploy to GitHub Pages
     release.yml                 # Release: gated on CI, auto-version + PyPI publish
@@ -77,6 +82,7 @@ recipe/
 scripts/
   init.sh                        # Interactive project initialization
   setup-repo.sh                  # One-time repo setup (branch protection)
+.dockerignore                   # Docker build context exclusions
 .editorconfig                   # Editor settings for non-Python files
 .gitignore                      # Git ignore rules
 .pre-commit-config.yaml         # Pre-commit hook definitions
@@ -101,6 +107,8 @@ uv run ruff format .                         # Ruff formatter only
 uv run pyright                               # Type checker only
 uv run --group docs mkdocs serve             # Local docs preview
 uv run --group docs mkdocs build --strict    # Build docs
+./tests/e2e/run-e2e.sh                      # E2E: full matrix (Docker)
+./tests/e2e/run-e2e.sh --quick              # E2E: python:3.13-slim only
 ```
 
 ## Development Lifecycle (TDD-First)

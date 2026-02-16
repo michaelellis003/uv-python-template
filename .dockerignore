@@ -1,0 +1,35 @@
+# Git
+.git
+
+# Virtual environments
+.venv
+
+# Caches
+__pycache__
+.ruff_cache
+.pytest_cache
+.mypy_cache
+
+# Build artifacts
+dist/
+build/
+*.egg-info
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Docs build output
+site/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+
+# Claude Code local files
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/agent-memory-local/

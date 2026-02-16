@@ -411,6 +411,9 @@ replace_all "s|michaelellis003/uv-python-template|${GITHUB_REPO}|g"
 sedi "s/name = \"Michael Ellis\"/name = \"${AUTHOR_NAME}\"/" pyproject.toml
 sedi "s|email = \"michaelellis003@gmail.com\"|email = \"${AUTHOR_EMAIL}\"|" pyproject.toml
 
+# --- CODEOWNERS ---
+sedi "s|@michaelellis003|@${GITHUB_OWNER}|g" .github/CODEOWNERS
+
 # --- GitHub Pages site URL (must run before generic name replacement) ---
 replace_all "s|michaelellis003.github.io/uv-python-template|${GITHUB_OWNER}.github.io/${KEBAB_NAME}|g"
 
@@ -510,6 +513,30 @@ if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
 
     # Update pyproject.toml license field
     sedi "s|license = {text = \"Apache-2.0\"}|license = {text = \"${LICENSE_SPDX}\"}|" pyproject.toml
+
+    # Update license trove classifier (PEP 639 license field is authoritative,
+    # but keep the classifier in sync for tools that read it)
+    LICENSE_CLASSIFIER=$(python3 -c "
+classifier_map = {
+    'MIT': 'License :: OSI Approved :: MIT License',
+    'Apache-2.0': 'License :: OSI Approved :: Apache Software License',
+    'BSD-2-Clause': 'License :: OSI Approved :: BSD License',
+    'BSD-3-Clause': 'License :: OSI Approved :: BSD License',
+    'GPL-2.0-only': 'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+    'GPL-3.0-only': 'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'LGPL-2.1-only': 'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
+    'AGPL-3.0-only': 'License :: OSI Approved :: GNU Affero General Public License v3',
+    'MPL-2.0': 'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
+    'Unlicense': 'License :: OSI Approved :: The Unlicense (Unlicense)',
+    'BSL-1.0': 'License :: OSI Approved :: Boost Software License 1.0 (BSL-1.0)',
+    'CC0-1.0': 'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
+    'EPL-2.0': 'License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)',
+}
+print(classifier_map.get('${LICENSE_SPDX}', ''))
+")
+    if [[ -n "$LICENSE_CLASSIFIER" ]]; then
+        sedi "s|License :: OSI Approved :: Apache Software License|${LICENSE_CLASSIFIER}|" pyproject.toml
+    fi
 
     # Update conda-forge recipe license field
     if [[ -f recipe/meta.yaml ]]; then
@@ -619,9 +646,49 @@ awk -v repo="${GITHUB_REPO}" -v name="${KEBAB_NAME}" '
 # Remove "Customizing the Template" from Table of Contents
 sedi '/Customizing the Template/d' README.md
 
+# Rewrite docs/index.md (remove template description and init.sh instructions)
+cat > docs/index.md << DOCS_INDEX_EOF
+# ${TITLE_NAME}
+
+${DESCRIPTION}
+
+## Features
+
+- **[uv](https://docs.astral.sh/uv/)** for fast Python package management
+- **[Ruff](https://docs.astral.sh/ruff/)** for linting and formatting
+- **[Pyright](https://github.com/microsoft/pyright)** for static type checking
+- **[Pytest](https://docs.pytest.org/)** with coverage for testing
+- **GitHub Actions** CI/CD with auto-release on merge to main
+
+## Quick Start
+
+\`\`\`bash
+git clone https://github.com/${GITHUB_REPO}.git
+cd ${KEBAB_NAME}
+uv sync
+uv run pytest -v --cov
+\`\`\`
+
+## Next Steps
+
+- [API Reference](api.md) — auto-generated documentation for all public functions
+DOCS_INDEX_EOF
+
 # Remove init.sh from project structure diagrams
 sedi '/init\.sh.*Interactive template/d' README.md
 sedi '/init\.sh.*Interactive project/d' CLAUDE.md
+
+# Remove init.sh references from docs/publishing.md
+sedi "s|run \`init.sh\` with \`--pypi\`, or manually|manually|" docs/publishing.md
+sedi "s|has been updated by \`init.sh\` with|contains|" docs/publishing.md
+
+# Remove init.sh reference from README publishing section
+sedi "s|Run \`\./scripts/init\.sh --pypi\` to enable publishing (or uncomment|Uncomment|" README.md
+sedi "s|the \`PYPI-START\`/\`PYPI-END\` block in \`release\.yml\` manually)\.|the \`PYPI-START\`/\`PYPI-END\` block in \`release.yml\`.|" README.md
+
+# Remove init.sh reference from project structure diagrams
+sedi "s|Apache-2.0 license (configurable via init.sh)|${LICENSE_SPDX} license|" README.md
+sedi "s|Apache-2.0 license (configurable via init.sh)|${LICENSE_SPDX} license|" CLAUDE.md
 
 # Strip template-only content from CLAUDE.md
 awk -v name="${KEBAB_NAME}" -v desc="${DESCRIPTION}" -v lic="${LICENSE_SPDX}" '
@@ -725,6 +792,91 @@ if [[ -d "tests/template" ]]; then
     sedi '/test_init_license.*Integration tests/d' README.md
 
     ok "Template tests removed."
+fi
+
+# Remove Docker E2E test suite (template-only infrastructure)
+if [[ -d "tests/e2e" ]]; then
+    rm -rf tests/e2e
+    rm -f .dockerignore
+    rm -f .github/workflows/e2e.yml
+
+    # Remove e2e/ references from documentation
+    sedi '/e2e\/.*# Docker-based/d' CLAUDE.md
+    sedi '/Dockerfile.*# Parameterized base/d' CLAUDE.md
+    sedi '/verify-project\.sh.*# Container-side/d' CLAUDE.md
+    sedi '/run-e2e\.sh.*# Host-side/d' CLAUDE.md
+    sedi '/e2e\.yml.*# E2E/d' CLAUDE.md
+    sedi '/\.dockerignore.*# Docker build/d' CLAUDE.md
+    sedi '/run-e2e\.sh/d' CLAUDE.md
+
+    ok "E2E test suite removed."
+fi
+
+# Remove "Template Tests" section from .claude/rules/testing.md
+if [[ -f .claude/rules/testing.md ]]; then
+    sedi '/^## Template Tests$/,/^are automatically removed when/d' .claude/rules/testing.md
+fi
+
+# Rewrite "License Headers" section in .claude/rules/code-style.md
+if [[ -f .claude/rules/code-style.md ]]; then
+    if [[ "$LICENSE_KEY_LOWER" != "none" ]]; then
+        python3 -c "
+content = open('.claude/rules/code-style.md').read()
+old_section = '''## License Headers
+
+- After running \`init.sh\` with a license selection, all \`.py\` files
+  will have SPDX license headers and an \`insert-license\` pre-commit
+  hook enforces them on new files.
+- Place after shebang (if present), before module docstring.
+- Format:
+  \`\`\`python
+  # Copyright YYYY Author Name
+  # SPDX-License-Identifier: LICENSE-ID
+  \`\`\`
+- The template repo itself does not ship with headers — they are
+  generated by \`init.sh\` based on the selected license.'''
+new_section = '''## License Headers
+
+- All \`.py\` files have SPDX license headers. The \`insert-license\`
+  pre-commit hook enforces them on new files.
+- Place after shebang (if present), before module docstring.
+- Format:
+  \`\`\`python
+  # Copyright YYYY Author Name
+  # SPDX-License-Identifier: LICENSE-ID
+  \`\`\`'''
+content = content.replace(old_section, new_section)
+open('.claude/rules/code-style.md', 'w').write(content)
+"
+    else
+        python3 -c "
+content = open('.claude/rules/code-style.md').read()
+old_section = '''## License Headers
+
+- After running \`init.sh\` with a license selection, all \`.py\` files
+  will have SPDX license headers and an \`insert-license\` pre-commit
+  hook enforces them on new files.
+- Place after shebang (if present), before module docstring.
+- Format:
+  \`\`\`python
+  # Copyright YYYY Author Name
+  # SPDX-License-Identifier: LICENSE-ID
+  \`\`\`
+- The template repo itself does not ship with headers — they are
+  generated by \`init.sh\` based on the selected license.'''
+new_section = '''## License Headers
+
+- Add SPDX license headers to all \`.py\` files when applicable.
+- Place after shebang (if present), before module docstring.
+- Format:
+  \`\`\`python
+  # Copyright YYYY Author Name
+  # SPDX-License-Identifier: LICENSE-ID
+  \`\`\`'''
+content = content.replace(old_section, new_section)
+open('.claude/rules/code-style.md', 'w').write(content)
+"
+    fi
 fi
 
 # ---------------------------------------------------------------------------
