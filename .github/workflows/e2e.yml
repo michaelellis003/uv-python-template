@@ -55,3 +55,17 @@ jobs:
 
       - name: Run E2E test (${{ matrix.base-image }}, license=${{ matrix.license }})
         run: docker run --rm e2e-test "${{ matrix.license }}"
+
+  # Gate job — single required check for branch protection.
+  e2e-pass:
+    if: always()
+    needs: [e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Verify all E2E checks passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "One or more E2E jobs failed or were cancelled."
+            exit 1
+          fi
