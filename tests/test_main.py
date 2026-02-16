@@ -1,3 +1,4 @@
+# TODO: Replace these demo tests with tests for your own code.
 from python_package_template import add, hello, multiply, subtract
 
 

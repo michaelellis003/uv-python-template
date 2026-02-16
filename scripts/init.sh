@@ -87,6 +87,7 @@ for lic in data:
     fi
 
     # Offline fallback
+    info "GitHub API unavailable; using offline license list." >&2
     echo "apache-2.0|Apache License 2.0"
     echo "mit|MIT License"
     echo "bsd-3-clause|BSD 3-Clause \"New\" or \"Revised\" License"
@@ -658,7 +659,43 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 13. Self-cleanup
+# 13. Post-init validation
+# ---------------------------------------------------------------------------
+
+info "Validating initialized project..."
+VALIDATION_OK=true
+
+# Verify the renamed package can be imported
+if command -v uv &>/dev/null; then
+    if ! uv run python -c "import ${SNAKE_NAME}" 2>/dev/null; then
+        warn "Could not import '${SNAKE_NAME}'. Check the renamed package."
+        VALIDATION_OK=false
+    fi
+fi
+
+# Check for stale template references in tracked files
+STALE_REFS=$(grep -rl 'python_package_template\|python-package-template' \
+    --include='*.py' --include='*.toml' --include='*.yml' --include='*.yaml' \
+    --include='*.md' --include='*.cfg' \
+    . 2>/dev/null \
+    | grep -v '.git/' \
+    | grep -v 'uv.lock' \
+    | grep -v 'init.sh' \
+    | grep -v 'tests/template/' \
+    || true)
+
+if [[ -n "$STALE_REFS" ]]; then
+    warn "Stale template references found in:"
+    echo "$STALE_REFS" | while IFS= read -r f; do echo "    $f"; done
+    VALIDATION_OK=false
+fi
+
+if [[ "$VALIDATION_OK" == "true" ]]; then
+    ok "Validation passed."
+fi
+
+# ---------------------------------------------------------------------------
+# 14. Self-cleanup
 # ---------------------------------------------------------------------------
 
 info "Removing init script (no longer needed)..."
@@ -681,7 +718,7 @@ if [[ -d "tests/template" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 14. Summary
+# 15. Summary
 # ---------------------------------------------------------------------------
 
 echo ""
@@ -695,14 +732,19 @@ echo "  PyPI publishing:    ${PYPI_ENABLED}"
 echo "  License:            ${LICENSE_SPDX}"
 echo ""
 echo "Next steps:"
-echo "  1. Review the changes:  git diff"
-echo "  2. Install deps:        uv sync"
-echo "  3. Run tests:           uv run pytest -v --cov"
-echo "  4. Enable pre-commit:   uv run pre-commit install"
+echo "  1. Review the changes:     git diff"
+echo "  2. Install deps:           uv sync"
+echo "  3. Run tests:              uv run pytest -v --cov"
+echo "  4. Enable pre-commit:      uv run pre-commit install"
 echo "  5. Replace the demo code in ${SNAKE_NAME}/main.py"
-echo "  6. Set up Codecov and add the badge to README.md"
-echo "  7. Enable GitHub Pages:  Settings > Pages > Source: GitHub Actions"
-echo "  8. Push and run:        ./scripts/setup-repo.sh"
+echo "  6. Commit initialized state:"
+echo "       git add -A && git commit -m 'chore: initialize from template'"
+echo "  7. Push to your repo:"
+echo "       git remote set-url origin <your-repo-url>"
+echo "       git push -u origin main"
+echo "  8. Set up Codecov and add the badge to README.md"
+echo "  9. Enable GitHub Pages:    Settings > Pages > Source: GitHub Actions"
+echo "  10. Set up branch protection: ./scripts/setup-repo.sh"
 
 if [[ "$PYPI_ENABLED" == "yes" ]]; then
     echo ""

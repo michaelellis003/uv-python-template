@@ -1,5 +1,7 @@
 """This is the python_package_template module.
 
+TODO: Replace this demo code with your own implementation.
+
 It provides basic functions for demonstration purposes.
 """
 

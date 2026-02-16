@@ -108,6 +108,22 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  # Verify the lockfile is up to date with pyproject.toml.
+  lock-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: ./.github/actions/setup-uv
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Check lockfile is up to date
+        run: uv lock --check
+
   # Smoke tests on macOS and Windows to catch platform-specific issues.
   pytest-macos:
     runs-on: macos-latest
@@ -173,7 +189,7 @@ jobs:
   # Gate job — single required check for branch protection.
   ci-pass:
     if: always()
-    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, pytest-macos, pytest-windows, build]
+    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, lock-check, pytest-macos, pytest-windows, build]
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
