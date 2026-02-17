@@ -169,8 +169,10 @@ fi
 STALE=$(grep -rl 'python_package_template\|python-package-template' \
     --include='*.py' --include='*.toml' --include='*.yml' \
     --include='*.yaml' --include='*.md' --include='*.json' \
+    --exclude-dir=.git --exclude-dir=.venv --exclude-dir=.ruff_cache \
+    --exclude-dir=.pytest_cache --exclude-dir=__pycache__ \
+    --exclude-dir=site --exclude-dir=dist --exclude-dir=build \
     . 2>/dev/null \
-    | grep -v '.git/' \
     | grep -v 'uv.lock' \
     || true)
 
