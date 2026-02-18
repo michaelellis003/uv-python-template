@@ -191,10 +191,46 @@ jobs:
           VIRTUAL_ENV=/tmp/test-install uv pip install dist/*.whl
           /tmp/test-install/bin/python -c "import ${PACKAGE_NAME}; print(${PACKAGE_NAME}.__version__)"
 
+  # CLI package (pypkgkit) — lint, typecheck, test.
+  cli-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cli
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Pyright type check
+        run: uv run pyright
+
+      - name: Run tests with coverage
+        run: uv run pytest -v --durations=0 --cov
+
   # Gate job — single required check for branch protection.
   ci-pass:
     if: always()
-    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, lock-check, pytest-macos, pytest-windows, build]
+    needs: [ruff-lint, ruff-format, pyright, pytest, coverage, lock-check, pytest-macos, pytest-windows, build, cli-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
