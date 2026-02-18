@@ -11,6 +11,15 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
+from pypkgkit.github import (
+    check_gh_authenticated,
+    check_gh_installed,
+    check_git_installed,
+    detect_gh_owner,
+    git_init,
+    setup_github,
+)
+
 REPO_OWNER = 'michaelellis003'
 REPO_NAME = 'uv-python-template'
 _API_BASE = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}'
@@ -201,13 +210,23 @@ def scaffold(
     *,
     template_version: str | None = None,
     init_args: list[str] | None = None,
+    github: bool = False,
+    github_owner: str | None = None,
+    private: bool = False,
+    require_reviews: int = 0,
+    description: str = '',
 ) -> int:
-    """Full scaffold pipeline: download, extract, init.
+    """Full scaffold pipeline: download, extract, init, git, github.
 
     Args:
         target: Directory name for the new project.
         template_version: Pin a specific release tag.
         init_args: Extra arguments for ``scripts/init.py``.
+        github: Create a GitHub repository and configure rulesets.
+        github_owner: GitHub username or org (auto-detected if omitted).
+        private: Create a private GitHub repository.
+        require_reviews: Number of required PR approvals.
+        description: Short project description.
 
     Returns:
         0 on success, non-zero on failure.
@@ -216,6 +235,27 @@ def scaffold(
 
     if target_path.exists():
         return _err(f'{target_path} already exists')
+
+    # Early gh checks + owner auto-detection (before init.py)
+    if github:
+        if not check_gh_installed():
+            return _err(
+                'gh CLI is not installed. Install from https://cli.github.com'
+            )
+        if not check_gh_authenticated():
+            return _err('gh is not authenticated. Run: gh auth login')
+        if not github_owner:
+            github_owner = detect_gh_owner()
+            if not github_owner:
+                return _err(
+                    'Could not detect GitHub username. '
+                    'Use --github-owner to specify.'
+                )
+
+    # Build effective init_args with auto-detected owner
+    effective_init_args = list(init_args or [])
+    if github and github_owner and '--github-owner' not in effective_init_args:
+        effective_init_args.extend(['--github-owner', github_owner])
 
     try:
         tag = _resolve_tag(template_version)
@@ -234,7 +274,9 @@ def scaffold(
         return rc
 
     try:
-        return invoke_init(target_path, init_args or [])
+        rc = invoke_init(target_path, effective_init_args)
+        if rc != 0:
+            return rc
     except FileNotFoundError as exc:
         if 'uv' in str(exc).lower() or 'No such file' in str(exc):
             return _err(
@@ -242,3 +284,25 @@ def scaffold(
                 'Install it from https://docs.astral.sh/uv/'
             )
         return _err(str(exc))
+
+    # Always: git init
+    if not check_git_installed():
+        return _err('git is not installed. Install from https://git-scm.com')
+    rc = git_init(target_path)
+    if rc != 0:
+        return _err('git init failed')
+
+    # Conditional: GitHub setup
+    if github and github_owner is not None:
+        rc = setup_github(
+            target_path,
+            owner=github_owner,
+            repo_name=target_path.name,
+            description=description,
+            private=private,
+            require_reviews=require_reviews,
+        )
+        if rc != 0:
+            return rc
+
+    return 0

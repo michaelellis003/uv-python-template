@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Setup script for repos created from python-package-template.
 #
-# Configures branch protection on main with required CI status checks.
-# GitHub does not copy branch protection rules from template repos, so
-# this must be run once after creating a new repo.
+# Configures a repository ruleset on main with required CI status checks
+# and admin bypass (needed for automated semantic-release commits).
+# GitHub does not copy rulesets from template repos, so this must be run
+# once after creating a new repo.
 #
 # Prerequisites:
 #   - gh CLI installed and authenticated (https://cli.github.com)
@@ -20,6 +21,7 @@ set -euo pipefail
 # Set to 0 to skip PR review requirements (default, suitable for solo devs).
 # Use --require-reviews N to override.
 REQUIRED_REVIEWS=0
+RULESET_NAME="main branch protection"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -49,35 +51,77 @@ REPO=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) || {
     exit 1
 }
 
-echo "Configuring branch protection for ${REPO} (main)..."
+echo "Configuring repository ruleset for ${REPO} (main)..."
 
-# Build the PR reviews JSON value
-if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
-    REVIEWS_VALUE="{ \"required_approving_review_count\": $REQUIRED_REVIEWS }"
-else
-    REVIEWS_VALUE="null"
-fi
-
-gh api "repos/${REPO}/branches/main/protection" \
-    --method PUT \
-    --input - <<EOF
+# Build the ruleset payload
+PAYLOAD=$(cat <<EOF
 {
-  "required_status_checks": {
-    "strict": true,
-    "checks": [
-      { "context": "ci-pass" }
-    ]
+  "name": "${RULESET_NAME}",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
   },
-  "enforce_admins": true,
-  "required_pull_request_reviews": ${REVIEWS_VALUE},
-  "restrictions": null
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": ${REQUIRED_REVIEWS},
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          { "context": "ci-pass" }
+        ]
+      }
+    },
+    { "type": "non_fast_forward" },
+    { "type": "deletion" }
+  ]
 }
 EOF
+)
 
-echo "Done. Branch protection enabled on main."
+# Check if a ruleset with this name already exists
+EXISTING_ID=$(
+    gh api "repos/${REPO}/rulesets" --jq \
+        ".[] | select(.name == \"${RULESET_NAME}\") | .id" 2>/dev/null
+) || EXISTING_ID=""
+
+if [[ -n "$EXISTING_ID" ]]; then
+    # Update existing ruleset
+    echo "$PAYLOAD" | gh api "repos/${REPO}/rulesets/${EXISTING_ID}" \
+        --method PUT --input - > /dev/null
+    echo "Done. Repository ruleset updated on main."
+else
+    # Create new ruleset
+    echo "$PAYLOAD" | gh api "repos/${REPO}/rulesets" \
+        --method POST --input - > /dev/null
+    echo "Done. Repository ruleset enabled on main."
+fi
+
 echo ""
 echo "Required status check:"
 echo "  - ci-pass (gate job that requires all CI jobs to succeed)"
+echo ""
+echo "Bypass: repository admins (for automated releases)"
 if [[ "$REQUIRED_REVIEWS" -gt 0 ]]; then
     echo ""
     echo "Required PR approvals: $REQUIRED_REVIEWS"

@@ -209,3 +209,358 @@ class TestScaffold:
         assert result != 0
         captured = capsys.readouterr()
         assert 'error' in captured.err.lower()
+
+    def test_git_init_always_called_after_init(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that git_init runs even without --github."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.git_init', return_value=0
+            ) as mock_git_init,
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            result = scaffold(str(target))
+
+        assert result == 0
+        mock_git_init.assert_called_once_with(target)
+
+    def test_github_setup_called_when_flag_set(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that setup_github runs when github=True."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.detect_gh_owner',
+                return_value='jane',
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=0),
+            patch(
+                'pypkgkit.scaffold.setup_github',
+                return_value=0,
+            ) as mock_setup,
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            result = scaffold(
+                str(target),
+                github=True,
+                private=True,
+                require_reviews=2,
+                description='Cool',
+            )
+
+        assert result == 0
+        mock_setup.assert_called_once_with(
+            target,
+            owner='jane',
+            repo_name='my-project',
+            description='Cool',
+            private=True,
+            require_reviews=2,
+        )
+
+    def test_github_not_called_when_flag_false(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that setup_github is NOT called without flag."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=0),
+            patch(
+                'pypkgkit.scaffold.setup_github',
+                return_value=0,
+            ) as mock_setup,
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            result = scaffold(str(target))
+
+        assert result == 0
+        mock_setup.assert_not_called()
+
+    def test_github_owner_auto_detected(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that owner is auto-detected when not provided."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.detect_gh_owner',
+                return_value='autodetected',
+            ) as mock_detect,
+            patch('pypkgkit.scaffold.git_init', return_value=0),
+            patch(
+                'pypkgkit.scaffold.setup_github',
+                return_value=0,
+            ) as mock_setup,
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            result = scaffold(str(target), github=True)
+
+        assert result == 0
+        mock_detect.assert_called_once()
+        mock_setup.assert_called_once()
+        assert mock_setup.call_args[1]['owner'] == 'autodetected'
+
+    def test_github_owner_injected_into_init_args(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test --github-owner is injected into init_args."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.detect_gh_owner',
+                return_value='autodetected',
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=0),
+            patch(
+                'pypkgkit.scaffold.setup_github',
+                return_value=0,
+            ),
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            scaffold(
+                str(target),
+                github=True,
+                init_args=['--name', 'pkg'],
+            )
+
+        # invoke_init is called via subprocess.run
+        init_cmd = mock_sub.run.call_args[0][0]
+        assert '--github-owner' in init_cmd
+        assert 'autodetected' in init_cmd
+
+    def test_github_fails_early_when_gh_not_installed(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test early failure when gh CLI is missing."""
+        target = tmp_path / 'my-project'
+
+        with patch(
+            'pypkgkit.scaffold.check_gh_installed',
+            return_value=False,
+        ):
+            result = scaffold(str(target), github=True)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'gh' in captured.err.lower()
+
+    def test_git_init_failure_returns_error(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test error when git init fails."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_resp_release = MagicMock()
+        mock_resp_release.read.return_value = mock_release_json
+        mock_resp_release.__enter__ = lambda s: s
+        mock_resp_release.__exit__ = MagicMock(return_value=False)
+
+        mock_resp_tarball = MagicMock()
+        mock_resp_tarball.read.return_value = tarball_path.read_bytes()
+        mock_resp_tarball.__enter__ = lambda s: s
+        mock_resp_tarball.__exit__ = MagicMock(return_value=False)
+
+        def mock_urlopen(url, *, timeout=None):
+            if 'api.github.com' in url:
+                return mock_resp_release
+            return mock_resp_tarball
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch('pypkgkit.scaffold.subprocess') as mock_sub,
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=1),
+        ):
+            mock_sub.run.return_value = MagicMock(returncode=0)
+            result = scaffold(str(target))
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'git init' in captured.err.lower()

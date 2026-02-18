@@ -51,6 +51,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         '--template-version',
         help='Pin a specific template release tag',
     )
+    new_cmd.add_argument(
+        '--github',
+        action='store_true',
+        default=False,
+        help='Create a GitHub repository and configure rulesets',
+    )
+    new_cmd.add_argument(
+        '--private',
+        action='store_true',
+        default=False,
+        help='Create a private GitHub repository (default: public)',
+    )
+    new_cmd.add_argument(
+        '--require-reviews',
+        type=int,
+        default=0,
+        metavar='N',
+        help='Require N PR approvals in branch ruleset (default: 0)',
+    )
 
     return parser.parse_args(argv)
 
@@ -108,6 +127,11 @@ def main(argv: list[str] | None = None) -> int:
         ns.project_dir,
         template_version=template_version,
         init_args=init_args,
+        github=getattr(ns, 'github', False),
+        github_owner=getattr(ns, 'github_owner', None),
+        private=getattr(ns, 'private', False),
+        require_reviews=getattr(ns, 'require_reviews', 0),
+        description=getattr(ns, 'description', '') or '',
     )
 
 

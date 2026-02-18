@@ -41,6 +41,10 @@ class TestParseArgs:
                 '--pypi',
                 '--template-version',
                 'v1.5.0',
+                '--github',
+                '--private',
+                '--require-reviews',
+                '2',
             ]
         )
         assert ns.project_dir == 'my-project'
@@ -52,6 +56,15 @@ class TestParseArgs:
         assert ns.license == 'mit'
         assert ns.pypi is True
         assert ns.template_version == 'v1.5.0'
+        assert ns.github is True
+        assert ns.private is True
+        assert ns.require_reviews == 2
+
+    def test_github_defaults_to_false(self):
+        ns = parse_args(['new', 'my-project'])
+        assert ns.github is False
+        assert ns.private is False
+        assert ns.require_reviews == 0
 
 
 class TestBuildPassthroughArgs:
@@ -108,3 +121,40 @@ class TestMain:
         mock_scaffold.assert_called_once()
         call_kwargs = mock_scaffold.call_args
         assert call_kwargs[0][0] == '/tmp/test-proj'
+
+    def test_new_passes_github_flags_to_scaffold(self):
+        with patch('pypkgkit.cli.scaffold') as mock_scaffold:
+            mock_scaffold.return_value = 0
+            main(
+                [
+                    'new',
+                    '/tmp/test-proj',
+                    '--name',
+                    'my-pkg',
+                    '--github',
+                    '--private',
+                    '--require-reviews',
+                    '2',
+                    '--github-owner',
+                    'jane',
+                    '--description',
+                    'Cool project',
+                ]
+            )
+
+        kwargs = mock_scaffold.call_args[1]
+        assert kwargs['github'] is True
+        assert kwargs['github_owner'] == 'jane'
+        assert kwargs['private'] is True
+        assert kwargs['require_reviews'] == 2
+        assert kwargs['description'] == 'Cool project'
+
+    def test_new_defaults_github_false_in_scaffold(self):
+        with patch('pypkgkit.cli.scaffold') as mock_scaffold:
+            mock_scaffold.return_value = 0
+            main(['new', '/tmp/test-proj'])
+
+        kwargs = mock_scaffold.call_args[1]
+        assert kwargs['github'] is False
+        assert kwargs['private'] is False
+        assert kwargs['require_reviews'] == 0
