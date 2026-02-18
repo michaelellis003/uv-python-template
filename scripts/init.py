@@ -236,7 +236,7 @@ def escape_toml_string(value: str) -> str:
 # Validation
 # ---------------------------------------------------------------------------
 
-_NAME_RE = re.compile(r'^[a-z][a-z0-9_-]*$')
+_NAME_RE = re.compile(r'^[a-z]([a-z0-9_-]*[a-z0-9])?$')
 _GITHUB_OWNER_RE = re.compile(r'^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$')
 
 
@@ -853,6 +853,51 @@ def _replace_marker_section(content: str, replacement: str) -> str:
     return '\n'.join(result)
 
 
+def _strip_cli_tests_from_ci(root: Path) -> None:
+    """Remove the cli-tests job and its needs reference from ci.yml.
+
+    Removes the block from the ``# CLI package`` comment through the
+    end of the cli-tests job definition, and strips ``, cli-tests``
+    from the ``ci-pass`` needs list.
+
+    Args:
+        root: Project root directory.
+    """
+    ci_yml = root / '.github' / 'workflows' / 'ci.yml'
+    if not ci_yml.exists():
+        return
+
+    content = ci_yml.read_text()
+    lines = content.split('\n')
+
+    # --- Remove the cli-tests job block ---
+    result: list[str] = []
+    skip = False
+    for line in lines:
+        if line.strip().startswith('# CLI package'):
+            skip = True
+            continue
+        if skip and line.strip() == 'cli-tests:':
+            continue
+        # Detect the start of the next top-level job (2-space indent)
+        if skip and re.match(r'^  \S', line):
+            skip = False
+        if skip:
+            continue
+        result.append(line)
+
+    # --- Remove cli-tests from ci-pass needs list ---
+    cleaned: list[str] = []
+    for line in result:
+        if 'needs:' in line and 'cli-tests' in line:
+            line = line.replace(', cli-tests', '')
+            line = line.replace('cli-tests, ', '')
+            line = line.replace('cli-tests', '')
+        cleaned.append(line)
+
+    ci_yml.write_text('\n'.join(cleaned))
+
+
 def cleanup_template_infrastructure(root: Path) -> None:
     """Remove template-specific files and directories.
 
@@ -885,6 +930,9 @@ def cleanup_template_infrastructure(root: Path) -> None:
     for d in dirs_to_remove:
         if d.exists():
             shutil.rmtree(d)
+
+    # Strip cli-tests job from ci.yml
+    _strip_cli_tests_from_ci(root)
 
 
 def reset_version_and_changelog(root: Path) -> None:
