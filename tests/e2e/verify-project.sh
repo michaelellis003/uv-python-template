@@ -100,6 +100,13 @@ else
     fail "E2E artifacts still exist"
 fi
 
+# CLI directory removed
+if [ ! -d "cli" ] && [ ! -f ".github/workflows/cli-release.yml" ]; then
+    pass "CLI directory and workflow removed"
+else
+    fail "CLI artifacts still exist"
+fi
+
 # CODEOWNERS updated
 if grep -q "@e2e-org" .github/CODEOWNERS; then
     pass "CODEOWNERS updated to @e2e-org"
