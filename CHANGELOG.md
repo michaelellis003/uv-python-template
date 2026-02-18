@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.9.1 (2026-02-18)
+
+### Bug Fixes
+
+- **release**: Add GITHUB_TOKEN fallback and fix git remote command
+  ([#29](https://github.com/michaelellis003/uv-python-template/pull/29),
+  [`53a0fde`](https://github.com/michaelellis003/uv-python-template/commit/53a0fdee4a8f1f9bba80f4fc8fd7e643014a269f))
+
+
 ## v1.9.0 (2026-02-18)
 
 ### Bug Fixes
