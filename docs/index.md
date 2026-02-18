@@ -18,7 +18,7 @@ type checking, testing, and CI/CD are already wired up.
 ```bash
 git clone https://github.com/michaelellis003/uv-python-template.git my-project
 cd my-project
-./scripts/init.sh
+uv run --script ./scripts/init.py
 uv sync
 uv run pytest -v --cov
 ```

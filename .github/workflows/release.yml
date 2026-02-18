@@ -74,7 +74,7 @@ jobs:
       #        Repository: <your-repo-name>
       #        Workflow name: release.yml
       #        Environment: (leave blank)
-      #   4. Run init.sh with --pypi, or uncomment the steps below.
+      #   4. Run init.py with --pypi, or uncomment the steps below.
       #
       # PYPI-START
       # - name: Publish to PyPI

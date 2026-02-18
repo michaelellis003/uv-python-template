@@ -67,7 +67,7 @@ printf 'y\n' | uv run --script ./scripts/init.py \
     --license "$LICENSE"
 
 # ---------------------------------------------------------------------------
-# 3. Verify init.sh outputs
+# 3. Verify init.py outputs
 # ---------------------------------------------------------------------------
 
 printf "\n${CYAN}==> Checking init.py results...${NC}\n"

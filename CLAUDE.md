@@ -11,7 +11,7 @@ starting new Python packages. Uses uv, Ruff, Pyright, and pre-commit
 hooks. License is configurable during initialization (default Apache-2.0).
 
 This is a **template repository**. Users clone it, run
-`./scripts/init.sh` to rename the package and configure metadata
+`uv run --script ./scripts/init.py` to rename the package and configure metadata
 (including license selection), then start building. The demo functions (`hello`, `add`, `subtract`,
 `multiply`) are working examples of the TDD workflow.
 <!-- TEMPLATE-ONLY-END -->
@@ -29,14 +29,14 @@ tests/
   test_init.py                  # Package-level tests
   test_main.py                  # Unit tests for demo functions
   test_main_module.py           # Tests for __main__.py entry point
-  template/                     # Template-specific tests (removed by init.sh)
+  template/                     # Template-specific tests (removed by init.py)
     conftest.py                # Fixtures: template_dir, init_project
     test_template_structure.py  # Verifies template ships clean
-    test_init_license.py        # Integration tests for init.sh license setup
+    test_init_license.py        # Integration tests for init.py license setup
     test_init_flags.py          # Tests for flag validation and special chars
   e2e/                          # Docker-based end-to-end tests
     Dockerfile                  # Parameterized base image (ARG BASE_IMAGE)
-    verify-project.sh           # Container-side: init.sh + full verification
+    verify-project.sh           # Container-side: init.py + full verification
     run-e2e.sh                  # Host-side orchestrator: matrix runner
 docs/
   index.md                     # Documentation landing page
@@ -50,7 +50,7 @@ docs/
   PULL_REQUEST_TEMPLATE.md     # PR checklist template
   workflows/
     ci.yml                      # CI: parallel lint, format, typecheck, test matrix
-    e2e.yml                     # E2E: Docker-based init.sh + full project verification
+    e2e.yml                     # E2E: Docker-based init.py + full project verification
     dependabot-auto-merge.yml   # Auto-merge minor/patch Dependabot PRs
     docs.yml                    # Docs: build and deploy to GitHub Pages
     release.yml                 # Release: gated on CI, auto-version + PyPI publish
@@ -81,7 +81,7 @@ docs/
 recipe/
   meta.yaml                      # conda-forge recipe skeleton
 scripts/
-  init.sh                        # Interactive project initialization
+  init.py                        # Interactive template initialization (PEP 723)
   setup-repo.sh                  # One-time repo setup (branch protection)
 .dockerignore                   # Docker build context exclusions
 .editorconfig                   # Editor settings for non-Python files
@@ -94,7 +94,7 @@ README.md                      # User documentation
 CHANGELOG.md                   # Release history
 CONTRIBUTING.md                # Contribution guidelines
 SECURITY.md                    # Security policy
-LICENSE                        # Apache-2.0 license (configurable via init.sh)
+LICENSE                        # Apache-2.0 license (configurable via init.py)
 ```
 
 ## Quick Reference — Development Commands

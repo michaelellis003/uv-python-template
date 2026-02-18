@@ -97,8 +97,8 @@ def test_refresh_token_with_valid_token_returns_new_pair():
 ## Template Tests
 
 Template-specific tests live in `tests/template/` and verify the
-template infrastructure (file structure, init.sh behavior). These
-are automatically removed when `init.sh` runs.
+template infrastructure (file structure, init.py behavior). These
+are automatically removed when `init.py` runs.
 
 Mark integration tests with `@pytest.mark.integration` and
 `@pytest.mark.slow`.

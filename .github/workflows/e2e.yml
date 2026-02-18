@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/init.sh'
       - 'scripts/init.py'
       - 'tests/e2e/**'
       - 'pyproject.toml'
@@ -13,7 +12,6 @@ on:
       - '.github/workflows/e2e.yml'
   pull_request:
     paths:
-      - 'scripts/init.sh'
       - 'scripts/init.py'
       - 'tests/e2e/**'
       - 'pyproject.toml'
@@ -42,7 +40,7 @@ jobs:
           - "python:3.12-slim"
           - "python:3.13-slim"
           # Alpine uses musl libc; pyright requires glibc, so pre-commit
-          # is skipped on Alpine. Kept to verify init.sh + build on musl.
+          # is skipped on Alpine. Kept to verify init.py + build on musl.
           - "python:3.13-alpine"
         license: ["mit", "none"]
     steps:

@@ -1,7 +1,7 @@
 """Tests that the template repository ships clean.
 
 These verify no license artifacts are baked into the template
-before init.sh is run.
+before init.py is run.
 """
 
 from pathlib import Path

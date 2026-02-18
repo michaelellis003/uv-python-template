@@ -55,15 +55,15 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 2. Run the setup script to rename the package and configure your project:
     ```bash
-    ./scripts/init.sh
+    uv run --script ./scripts/init.py
     ```
     This will prompt you for your package name, author info, and GitHub details, then update all references across the codebase automatically.
 
     For non-interactive usage, pass all values as flags:
     ```bash
-    ./scripts/init.sh --name my-pkg --author "Jane Smith" --email jane@example.com \
-                      --github-owner janesmith --description "My awesome package" \
-                      --license mit
+    uv run --script ./scripts/init.py --name my-pkg --author "Jane Smith" \
+        --email jane@example.com --github-owner janesmith \
+        --description "My awesome package" --license mit
     ```
 
 3. Install dependencies:
@@ -92,7 +92,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 The fastest way to set up your project is to run the interactive init script:
 
 ```bash
-./scripts/init.sh
+uv run --script ./scripts/init.py
 ```
 
 This handles the package rename, author info, GitHub URLs, version reset, and changelog reset automatically. After running it, the only manual steps remaining are:
@@ -251,7 +251,7 @@ Runs parallel jobs for fast feedback:
 
 ### On Push to Main and Pull Request (`e2e.yml`)
 
-Docker-based end-to-end tests that verify `init.sh` works correctly across multiple Python versions and license configurations. Run locally with:
+Docker-based end-to-end tests that verify `init.py` works correctly across multiple Python versions and license configurations. Run locally with:
 
 ```bash
 ./tests/e2e/run-e2e.sh          # Full matrix
@@ -264,7 +264,7 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 
 **Quick setup (PyPI):**
 
-1. Run `./scripts/init.sh --pypi` to enable publishing (or uncomment the `PYPI-START`/`PYPI-END` block in `release.yml` manually).
+1. Run `uv run --script ./scripts/init.py --pypi` to enable publishing (or uncomment the `PYPI-START`/`PYPI-END` block in `release.yml` manually).
 2. Add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on pypi.org for this repository (workflow: `release.yml`).
 3. Every merge to `main` with a `feat:` or `fix:` commit will auto-publish.
 
@@ -285,9 +285,9 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 │   ├── test_init.py                # Package-level tests
 │   ├── test_main.py                # Unit tests for demo functions
 │   ├── test_main_module.py         # Tests for __main__.py entry point
-│   └── template/                   # Template tests (removed by init.sh)
+│   └── template/                   # Template tests (removed by init.py)
 │       ├── test_template_structure.py  # Verifies template ships clean
-│       └── test_init_license.py        # Integration tests for init.sh
+│       └── test_init_license.py        # Integration tests for init.py
 ├── docs/
 │   ├── index.md                    # Documentation landing page
 │   ├── api.md                      # Auto-generated API reference
@@ -312,7 +312,7 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 ├── recipe/
 │   └── meta.yaml                   # conda-forge recipe skeleton
 ├── scripts/
-│   ├── init.sh                     # Interactive template initialization
+│   ├── init.py                     # Interactive template initialization
 │   └── setup-repo.sh               # One-time repo setup (branch protection)
 ├── .editorconfig                   # Editor settings for non-Python files
 ├── .gitignore                      # Git ignore rules
@@ -322,7 +322,7 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 ├── uv.lock                        # Locked dependency versions
 ├── CHANGELOG.md                   # Release history
 ├── CONTRIBUTING.md                # Contribution guidelines
-├── LICENSE                        # Apache-2.0 license (configurable via init.sh)
+├── LICENSE                        # Apache-2.0 license (configurable via init.py)
 ├── README.md                      # This file
 └── SECURITY.md                    # Security policy
 ```

@@ -18,9 +18,9 @@ directly with PyPI using OpenID Connect.
     - **Repository**: your repository name
     - **Workflow name**: `release.yml`
     - **Environment**: leave blank
-3. **Enable publishing** — run `init.sh` with `--pypi`, or manually
-   uncomment the publish steps between the `PYPI-START` / `PYPI-END`
-   markers in `.github/workflows/release.yml`.
+3. **Enable publishing** — run `uv run --script ./scripts/init.py --pypi`,
+   or manually uncomment the publish steps between the `PYPI-START` /
+   `PYPI-END` markers in `.github/workflows/release.yml`.
 
 Once configured, every merge to `main` that includes a `feat:` or
 `fix:` commit will automatically version-bump, build, and publish
@@ -77,8 +77,8 @@ package to [conda-forge](https://conda-forge.org/):
 ### Prerequisites
 
 - Your package must already be published on PyPI.
-- The `recipe/meta.yaml` file has been updated by `init.sh` with
-  your package name, description, and maintainer.
+- The `recipe/meta.yaml` file contains your package name, description,
+  and maintainer (set during initialization).
 
 ### Steps
 
