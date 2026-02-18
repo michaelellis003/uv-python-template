@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.9.2 (2026-02-18)
+
+### Bug Fixes
+
+- Correct CLI exit code, YAML-escape descriptions, and E2E license check
+  ([#30](https://github.com/michaelellis003/uv-python-template/pull/30),
+  [`1e35687`](https://github.com/michaelellis003/uv-python-template/commit/1e356876d8c8fd413eec3e15bc9fc180d6d25728))
+
+
 ## v1.9.1 (2026-02-18)
 
 ### Bug Fixes

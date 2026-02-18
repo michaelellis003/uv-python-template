@@ -1,6 +1,6 @@
 [project]
 name = "python-package-template"
-version = "1.9.1"
+version = "1.9.2"
 description = "A production-ready template for starting new Python packages."
 authors = [
     {name = "Michael Ellis", email = "michaelellis003@gmail.com"}
