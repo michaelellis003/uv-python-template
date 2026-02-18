@@ -147,7 +147,7 @@ docstring-code-line-length = "dynamic"
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "standard"
-exclude = [".venv"]
+exclude = [".venv", "cli"]
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
