@@ -29,6 +29,20 @@ A production-ready template for starting new Python packages. Clone it, rename a
 - **TDD-first development lifecycle** with Claude Code configuration for AI-assisted development.
 
 <!-- TEMPLATE-ONLY-START -->
+## Quick Start with pypkgkit
+
+The fastest way to scaffold a new project:
+
+```bash
+# One command — downloads the template, runs init interactively
+uvx pypkgkit new my-project
+
+# Non-interactive
+uvx pypkgkit new my-project \
+    --name my-pkg --author "Jane Smith" --email jane@example.com \
+    --github-owner janesmith --description "My awesome package" --license mit
+```
+
 ## Getting Started
 
 ### Prerequisites
@@ -303,12 +317,17 @@ The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**.
 │       ├── dependabot-auto-merge.yml  # Auto-merge minor/patch Dependabot PRs
 │       ├── docs.yml                # Docs: build and deploy to GitHub Pages
 │       ├── release.yml             # Gated on CI, auto-version + GitHub Release
-│       └── test-publish.yml        # Manual TestPyPI publishing
+│       ├── test-publish.yml        # Manual TestPyPI publishing
+│       └── cli-release.yml         # CLI pypkgkit release workflow
 ├── .claude/                         # Claude Code AI assistant config
 │   ├── settings.json               # Permissions, hooks
 │   ├── rules/                      # Development standards
 │   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
 │   └── agents/                     # Specialized subagents
+├── cli/                             # CLI pypkgkit package (removed by init.py)
+│   ├── pyproject.toml              # pypkgkit package config
+│   ├── src/pypkgkit/               # CLI source code
+│   └── tests/                      # CLI tests
 ├── recipe/
 │   └── meta.yaml                   # conda-forge recipe skeleton
 ├── scripts/
