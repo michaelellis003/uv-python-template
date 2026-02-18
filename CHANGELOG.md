@@ -2,6 +2,21 @@
 
 <!-- version list -->
 
+## v1.9.0 (2026-02-18)
+
+### Bug Fixes
+
+- **cli**: Mock git_init in existing scaffold pipeline test
+  ([#28](https://github.com/michaelellis003/uv-python-template/pull/28),
+  [`e05cd19`](https://github.com/michaelellis003/uv-python-template/commit/e05cd19b61854a22960d77c2fa9907a5263e0c72))
+
+### Features
+
+- **cli**: Add --github flag for full GitHub repo setup
+  ([#28](https://github.com/michaelellis003/uv-python-template/pull/28),
+  [`e05cd19`](https://github.com/michaelellis003/uv-python-template/commit/e05cd19b61854a22960d77c2fa9907a5263e0c72))
+
+
 ## v1.8.0 (2026-02-18)
 
 ### Bug Fixes
