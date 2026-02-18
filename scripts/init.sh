@@ -910,6 +910,7 @@ STALE_REFS=$(grep -rl \
     . 2>/dev/null \
     | grep -v 'uv.lock' \
     | grep -v 'init.sh' \
+    | grep -v 'init.py' \
     | grep -v 'tests/template/' \
     || true)
 
@@ -927,8 +928,9 @@ fi
 # 14. Self-cleanup
 # ---------------------------------------------------------------------------
 
-info "Removing init script (no longer needed)..."
+info "Removing init scripts (no longer needed)..."
 rm -f -- "$0"
+rm -f scripts/init.py
 
 # Remove template-specific tests (not needed for derived projects)
 if [[ -d "tests/template" ]]; then
