@@ -119,6 +119,16 @@ class TestFindProjectFiles:
         names = {p.name for p in result}
         assert 'test_init.py' not in names
 
+    def test_find_project_files_excludes_cli_dir(self, init_mod, tmp_path):
+        """Test that cli/ directory is excluded."""
+        cli_dir = tmp_path / 'cli'
+        cli_dir.mkdir()
+        (cli_dir / 'pyproject.toml').write_text('[project]')
+        (tmp_path / 'file.py').write_text('hello')
+        result = init_mod.find_project_files(tmp_path)
+        names = {p.name for p in result}
+        assert 'pyproject.toml' not in names
+
 
 # ===================================================================
 # replace_in_file
@@ -641,6 +651,22 @@ class TestCleanupTemplateInfrastructure:
         (workflows / 'e2e.yml').write_text('name: E2E')
         init_mod.cleanup_template_infrastructure(tmp_path)
         assert not (workflows / 'e2e.yml').exists()
+
+    def test_cleanup_removes_cli_directory(self, init_mod, tmp_path):
+        """Test that cli/ directory is removed."""
+        cli = tmp_path / 'cli'
+        cli.mkdir()
+        (cli / 'pyproject.toml').write_text('[project]')
+        init_mod.cleanup_template_infrastructure(tmp_path)
+        assert not cli.exists()
+
+    def test_cleanup_removes_cli_release_workflow(self, init_mod, tmp_path):
+        """Test that cli-release.yml workflow is removed."""
+        workflows = tmp_path / '.github' / 'workflows'
+        workflows.mkdir(parents=True)
+        (workflows / 'cli-release.yml').write_text('name: CLI Release')
+        init_mod.cleanup_template_infrastructure(tmp_path)
+        assert not (workflows / 'cli-release.yml').exists()
 
     def test_cleanup_preserves_other_files(self, init_mod, tmp_path):
         """Test that non-template files are preserved."""

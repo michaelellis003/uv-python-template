@@ -413,6 +413,7 @@ _EXCLUDE_DIRS: frozenset[str] = frozenset(
         'site',
         'dist',
         'build',
+        'cli',
     }
 )
 
@@ -869,6 +870,7 @@ def cleanup_template_infrastructure(root: Path) -> None:
         root / 'scripts' / 'init.py',
         root / '.dockerignore',
         root / '.github' / 'workflows' / 'e2e.yml',
+        root / '.github' / 'workflows' / 'cli-release.yml',
     ]
     for f in files_to_remove:
         if f.exists():
@@ -878,6 +880,7 @@ def cleanup_template_infrastructure(root: Path) -> None:
     dirs_to_remove = [
         root / 'tests' / 'template',
         root / 'tests' / 'e2e',
+        root / 'cli',
     ]
     for d in dirs_to_remove:
         if d.exists():
@@ -1815,25 +1818,30 @@ def _is_template_doc_line(line: str) -> bool:
         'run-e2e.sh',
         'e2e.yml',
         '.dockerignore',
+        'cli/',
+        'cli-release.yml',
+    ]
+    match_hints = [
+        '# Template',
+        '# Fixtures',
+        '# Docker',
+        '# Parameterized',
+        '# Container-side',
+        '# Host-side',
+        '# E2E',
+        '# CLI',
+        'Verifies template',
+        'Integration tests',
+        'Docker build',
+        'Template-specific',
+        'pypkgkit',
     ]
     # Only match lines that look like documentation structure entries
     stripped = line.strip()
     if not stripped:
         return False
     for pattern in patterns:
-        if pattern in line and (
-            '# Template' in line
-            or '# Fixtures' in line
-            or '# Docker' in line
-            or '# Parameterized' in line
-            or '# Container-side' in line
-            or '# Host-side' in line
-            or '# E2E' in line
-            or 'Verifies template' in line
-            or 'Integration tests' in line
-            or 'Docker build' in line
-            or 'Template-specific' in line
-        ):
+        if pattern in line and any(hint in line for hint in match_hints):
             return True
     return False
 

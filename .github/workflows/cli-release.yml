@@ -1,0 +1,84 @@
+name: CLI Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 0.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: cli-release
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: cli
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Update version
+        run: |
+          sed -i "s/^version = \".*\"/version = \"${{ inputs.version }}\"/" pyproject.toml
+
+      - name: Run tests
+        run: uv run pytest -v --durations=0
+
+      - name: Build
+        run: uv build
+
+      - name: Validate package
+        run: uvx twine check dist/*
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit, tag, and push
+        working-directory: .
+        run: |
+          git add cli/pyproject.toml
+          git commit -m "chore(cli): bump pypkgkit to v${{ inputs.version }}"
+          git tag "pypkgkit/v${{ inputs.version }}"
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: .
+        run: |
+          gh release create "pypkgkit/v${{ inputs.version }}" \
+            cli/dist/* \
+            --title "pypkgkit v${{ inputs.version }}" \
+            --generate-notes \
+            --notes-start-tag "pypkgkit/v0.0.0"
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: cli/dist/
+          attestations: true

@@ -1,0 +1,107 @@
+[project]
+name = "pypkgkit"
+version = "0.1.0"
+description = "Scaffold new Python packages from the uv-python-template."
+authors = [
+    {name = "Michael Ellis", email = "michaelellis003@gmail.com"}
+]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["template", "python", "uv", "scaffold", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.scripts]
+pypkgkit = "pypkgkit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/michaelellis003/uv-python-template"
+Repository = "https://github.com/michaelellis003/uv-python-template"
+Issues = "https://github.com/michaelellis003/uv-python-template/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pyright>=1.1.408",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.15.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pypkgkit"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 79
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "F", "E", "W", "N", "D", "UP", "B", "SIM", "I", "C4",
+    "C90", "T20", "S", "PT", "PLR", "RUF", "ARG",
+]
+ignore = ["D206", "D300"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "S101", "S108", "S603", "PLR2004", "ARG"]
+"src/pypkgkit/scaffold.py" = ["T20", "S310", "PLR0911", "PLR0912", "C901"]
+"src/pypkgkit/cli.py" = ["T20"]
+"src/pypkgkit/__main__.py" = ["T20"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "standard"
+exclude = [".venv"]
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["pypkgkit"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+    "@overload",
+]
