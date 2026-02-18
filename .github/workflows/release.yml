@@ -31,6 +31,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Setup uv
         uses: ./.github/actions/setup-uv
@@ -43,7 +44,7 @@ jobs:
       - name: Semantic Release Version
         id: version
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           BEFORE=$(grep '^version = ' pyproject.toml | head -1 | cut -d'"' -f2)
           uv run semantic-release version
@@ -59,7 +60,7 @@ jobs:
       - name: Semantic Release Publish
         if: steps.version.outputs.released == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: uv run semantic-release publish
 
       - name: Validate package metadata

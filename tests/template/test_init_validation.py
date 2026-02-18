@@ -180,6 +180,20 @@ class TestValidateName:
         with pytest.raises(ValueError, match='Invalid package name'):
             init_mod.validate_name('my@package')
 
+    def test_validate_name_rejects_trailing_hyphen(self, init_mod):
+        """Test that names ending with a hyphen are rejected."""
+        with pytest.raises(ValueError, match='Invalid package name'):
+            init_mod.validate_name('my-pkg-')
+
+    def test_validate_name_rejects_trailing_underscore(self, init_mod):
+        """Test that names ending with an underscore are rejected."""
+        with pytest.raises(ValueError, match='Invalid package name'):
+            init_mod.validate_name('my_pkg_')
+
+    def test_validate_name_single_char_passes(self, init_mod):
+        """Test that a single lowercase letter is a valid name."""
+        init_mod.validate_name('a')
+
 
 # ===================================================================
 # validate_email

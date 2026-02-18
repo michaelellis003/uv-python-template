@@ -107,6 +107,13 @@ else
     fail "CLI artifacts still exist"
 fi
 
+# cli-tests job removed from ci.yml
+if ! grep -q 'cli-tests' .github/workflows/ci.yml; then
+    pass "cli-tests job removed from ci.yml"
+else
+    fail "cli-tests job still in ci.yml"
+fi
+
 # CODEOWNERS updated
 if grep -q "@e2e-org" .github/CODEOWNERS; then
     pass "CODEOWNERS updated to @e2e-org"

@@ -676,6 +676,95 @@ class TestCleanupTemplateInfrastructure:
         assert (tmp_path / 'pyproject.toml').exists()
         assert (tmp_path / 'README.md').exists()
 
+    def test_cleanup_strips_cli_tests_job_from_ci_yml(
+        self, init_mod, tmp_path
+    ):
+        """Test that cli-tests job block is removed from ci.yml."""
+        workflows = tmp_path / '.github' / 'workflows'
+        workflows.mkdir(parents=True)
+        ci = workflows / 'ci.yml'
+        ci.write_text(
+            'jobs:\n'
+            '  build:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: echo build\n'
+            '\n'
+            '  # CLI package (pypkgkit) — lint, typecheck, test.\n'
+            '  cli-tests:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: echo cli\n'
+            '\n'
+            '  ci-pass:\n'
+            '    needs: [build, cli-tests]\n'
+            '    runs-on: ubuntu-latest\n'
+        )
+        init_mod.cleanup_template_infrastructure(tmp_path)
+        content = ci.read_text()
+        assert 'cli-tests:' not in content
+        assert 'cli-tests' not in content
+
+    def test_cleanup_strips_cli_tests_from_ci_pass_needs(
+        self, init_mod, tmp_path
+    ):
+        """Test that cli-tests is removed from ci-pass needs list."""
+        workflows = tmp_path / '.github' / 'workflows'
+        workflows.mkdir(parents=True)
+        ci = workflows / 'ci.yml'
+        ci.write_text(
+            'jobs:\n'
+            '  build:\n'
+            '    runs-on: ubuntu-latest\n'
+            '\n'
+            '  # CLI package (pypkgkit) — lint, typecheck, test.\n'
+            '  cli-tests:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: echo cli\n'
+            '\n'
+            '  ci-pass:\n'
+            '    needs: [build, cli-tests]\n'
+            '    runs-on: ubuntu-latest\n'
+        )
+        init_mod.cleanup_template_infrastructure(tmp_path)
+        content = ci.read_text()
+        assert 'needs: [build]' in content
+
+    def test_cleanup_preserves_other_ci_jobs(self, init_mod, tmp_path):
+        """Test that non-cli jobs remain intact after cleanup."""
+        workflows = tmp_path / '.github' / 'workflows'
+        workflows.mkdir(parents=True)
+        ci = workflows / 'ci.yml'
+        ci.write_text(
+            'jobs:\n'
+            '  ruff-lint:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: ruff check .\n'
+            '\n'
+            '  pytest:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: pytest\n'
+            '\n'
+            '  # CLI package (pypkgkit) — lint, typecheck, test.\n'
+            '  cli-tests:\n'
+            '    runs-on: ubuntu-latest\n'
+            '    steps:\n'
+            '      - run: echo cli\n'
+            '\n'
+            '  ci-pass:\n'
+            '    needs: [ruff-lint, pytest, cli-tests]\n'
+            '    runs-on: ubuntu-latest\n'
+        )
+        init_mod.cleanup_template_infrastructure(tmp_path)
+        content = ci.read_text()
+        assert 'ruff-lint:' in content
+        assert 'pytest:' in content
+        assert 'ci-pass:' in content
+        assert 'cli-tests' not in content
+
 
 # ===================================================================
 # reset_version_and_changelog
