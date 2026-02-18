@@ -55,6 +55,7 @@ docs/
     docs.yml                    # Docs: build and deploy to GitHub Pages
     release.yml                 # Release: gated on CI, auto-version + PyPI publish
     test-publish.yml            # Manual TestPyPI publishing
+    cli-release.yml             # CLI pypkgkit release (manual dispatch)
 .claude/
   settings.json                 # Claude Code project settings and hooks
   rules/                        # Modular instructions by topic
@@ -78,6 +79,19 @@ docs/
   hooks/                          # Tool-use hooks
     protect-files.sh              # Block edits to protected files
     pre-push-check.sh            # Lint + typecheck + test before push
+cli/                                # CLI pypkgkit package (removed by init.py)
+  pyproject.toml                  # pypkgkit package config, zero deps
+  src/pypkgkit/
+    __init__.py                   # Version via importlib.metadata
+    __main__.py                   # python -m pypkgkit support
+    cli.py                        # argparse entry point + main()
+    scaffold.py                   # Download, extract, invoke logic
+    py.typed                      # PEP 561 marker
+  tests/
+    conftest.py                   # Mock fixtures (release JSON, tarball)
+    test_cli.py                   # Arg parsing + dispatch tests
+    test_scaffold.py              # Download, extract, invoke tests
+  README.md                       # PyPI readme for pypkgkit
 recipe/
   meta.yaml                      # conda-forge recipe skeleton
 scripts/
