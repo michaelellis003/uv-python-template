@@ -2,6 +2,65 @@
 
 <!-- version list -->
 
+## v1.8.0 (2026-02-18)
+
+### Bug Fixes
+
+- **e2e**: Exclude test_init.py from init script reference check
+  ([`eb65a75`](https://github.com/michaelellis003/uv-python-template/commit/eb65a750709bf08b52a1694eae32322a30fc5b95))
+
+- **init**: Add .gitattributes, fix sed delimiter, expand stale check
+  ([`4de0690`](https://github.com/michaelellis003/uv-python-template/commit/4de0690da34a79a8907381d7a6bf5ff8aa23ced8))
+
+- **init**: Add cli/ to cleanup and exclusions
+  ([`03caaa5`](https://github.com/michaelellis003/uv-python-template/commit/03caaa5a4347a49d81800aba54062f1b61e6d827))
+
+- **init**: Escape quotes and backslashes for TOML strings
+  ([`4e50446`](https://github.com/michaelellis003/uv-python-template/commit/4e50446aa35ff194b3be5840db6dd633b883d4bc))
+
+- **init**: Exclude generated dirs from stale reference check
+  ([`d28e2b3`](https://github.com/michaelellis003/uv-python-template/commit/d28e2b3254fa8b51294e0282aab72539ad08a4ab))
+
+- **init**: Require non-empty description and harden E2E checks
+  ([`b0dab30`](https://github.com/michaelellis003/uv-python-template/commit/b0dab30266a69814200930bc7ee9fcaf0b0d547b))
+
+- **init**: Strip cli-tests from ci.yml, reject trailing hyphens in names, use RELEASE_TOKEN
+  ([`deb9361`](https://github.com/michaelellis003/uv-python-template/commit/deb93616873f19d9e17461e726c8efbaf4602892))
+
+### Continuous Integration
+
+- **cli**: Add cli-tests job and cli-release workflow
+  ([`5a77583`](https://github.com/michaelellis003/uv-python-template/commit/5a77583aef5ebcdbe01649ee7742a8f3b869ac55))
+
+### Documentation
+
+- Add pypkgkit CLI documentation
+  ([`35b4805`](https://github.com/michaelellis003/uv-python-template/commit/35b4805a32f5b09838c4e06529b13884b99f4cf9))
+
+### Features
+
+- **cli**: Add pypkgkit CLI package for scaffolding projects
+  ([`0afc5a0`](https://github.com/michaelellis003/uv-python-template/commit/0afc5a0e30ec5d4801417d1b2885aeb5d7222b13))
+
+- **e2e**: Update E2E tests to use init.py instead of init.sh
+  ([`33f974e`](https://github.com/michaelellis003/uv-python-template/commit/33f974eb78efa89efc9b1d1a94d246d3cfc0f2ac))
+
+- **init**: Add CLI, prompts, and orchestration to init.py
+  ([`c73c749`](https://github.com/michaelellis003/uv-python-template/commit/c73c749a1a651aab97d74e908a4de70281daa845))
+
+- **init**: Add file operation functions to init.py
+  ([`79253fe`](https://github.com/michaelellis003/uv-python-template/commit/79253fe08ae6d43bcea4b56441a561c9295108e5))
+
+- **init**: Add scripts/init.py with pure validation and transform logic
+  ([`1ca17a8`](https://github.com/michaelellis003/uv-python-template/commit/1ca17a8231b7daa83c1d8765edad570008ca0643))
+
+- **init**: Migrate integration tests to call init.py
+  ([`7b0527d`](https://github.com/michaelellis003/uv-python-template/commit/7b0527d7a6e802f90b42c19bca4b88ce74e71be6))
+
+- **init**: Remove init.sh and update all documentation
+  ([`f7880a3`](https://github.com/michaelellis003/uv-python-template/commit/f7880a370d4d038dbf66651b91a0c68f514a2fe2))
+
+
 ## v1.7.3 (2026-02-16)
 
 ### Bug Fixes
