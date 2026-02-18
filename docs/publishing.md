@@ -34,6 +34,22 @@ When PyPI publishing is enabled, the workflow also generates
 `actions/attest-build-provenance`. This lets users verify that
 your published package was built from your repository.
 
+## Release Token
+
+The release workflow works **out of the box** using the default
+`GITHUB_TOKEN` — no extra secrets are required.
+
+However, commits created by `github-actions[bot]` (via `GITHUB_TOKEN`)
+[do not trigger other workflows](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow).
+This means the docs-deploy workflow won't run for the version-bump
+commit.
+
+To enable downstream workflows, create a **fine-grained Personal Access
+Token** (PAT) with **Contents: read/write** scope and add it as a
+repository secret named `RELEASE_TOKEN`. The release workflow will
+prefer `RELEASE_TOKEN` when available and fall back to `GITHUB_TOKEN`
+otherwise.
+
 ## Build Validation
 
 Every CI run includes a `build` job that:

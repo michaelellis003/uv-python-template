@@ -122,6 +122,7 @@ This handles the package rename, author info, GitHub URLs, version reset, and ch
 | Enable GitHub Pages | Repo **Settings > Pages > Source**: select **GitHub Actions** |
 | Configure branch protection | Run `./scripts/setup-repo.sh` (requires `gh` CLI and admin access) |
 | Update keywords | `pyproject.toml` — `keywords` field (reset to empty by init script) |
+| (Optional) Add `RELEASE_TOKEN` secret | Create a fine-grained PAT with **Contents: read/write** and add it as a repo secret — release commits will then trigger downstream workflows (e.g. docs deploy). Without it, `GITHUB_TOKEN` is used automatically. |
 
 <details>
 <summary>Manual setup (without init script)</summary>
@@ -252,6 +253,12 @@ Runs parallel jobs for fast feedback:
 - **Building** — runs `uv build` to produce sdist and wheel
 - **Releasing** — creates a GitHub Release with the built artifacts and release notes
 - **Publishing** — (optional) publishes to PyPI with trusted publishing and build attestations
+
+> **Release token:** The workflow works out of the box using the default
+> `GITHUB_TOKEN`. However, commits created by `github-actions[bot]` do
+> not trigger other workflows (e.g. docs deploy). To enable that, create
+> a fine-grained PAT with **Contents: read/write** and add it as a
+> repository secret named `RELEASE_TOKEN`.
 
 ### On Manual Trigger (`test-publish.yml`)
 

@@ -1933,7 +1933,7 @@ def _print_summary(config: ProjectConfig, ok: bool) -> None:
         "       git add -A && git commit -m 'chore: initialize from template'"
     )
     print('  7. Push to your repo:')
-    print('       git remote set-url origin <your-repo-url>')
+    print('       git remote add origin <your-repo-url>')
     print('       git push -u origin main')
     print('  8. Set up Codecov and add the badge to README.md')
     print(
