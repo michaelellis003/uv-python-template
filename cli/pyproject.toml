@@ -1,6 +1,6 @@
 [project]
 name = "pypkgkit"
-version = "0.1.0"
+version = "1.0.0"
 description = "Scaffold new Python packages from the uv-python-template."
 authors = [
     {name = "Michael Ellis", email = "michaelellis003@gmail.com"}
