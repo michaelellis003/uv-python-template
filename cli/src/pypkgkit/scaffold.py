@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import shutil
-import sys
 import tarfile
+import tempfile
 from pathlib import Path
 from types import ModuleType
 from urllib.error import HTTPError, URLError
@@ -13,6 +13,7 @@ from urllib.request import urlopen
 
 from pypkgkit import __version__
 from pypkgkit import defaults as _defaults
+from pypkgkit._util import err as _err
 from pypkgkit.github import (
     check_gh_authenticated,
     check_gh_installed,
@@ -119,6 +120,11 @@ def extract_tarball(path: Path, dest: Path) -> Path:
 
     # The archive contains a single top-level directory
     children = [p for p in dest.iterdir() if p.is_dir()]
+    if len(children) != 1:
+        msg = (
+            f'Expected 1 top-level directory in archive, found {len(children)}'
+        )
+        raise ValueError(msg)
     return children[0]
 
 
@@ -150,19 +156,6 @@ def _resolve_tag(template_version: str | None) -> str:
     return template_version or get_latest_release_tag()
 
 
-def _err(msg: str) -> int:
-    """Print an error message and return 1.
-
-    Args:
-        msg: Error message.
-
-    Returns:
-        Always returns 1.
-    """
-    print(f'error: {msg}', file=sys.stderr)
-    return 1
-
-
 def _download_and_extract(tag: str, target_path: Path) -> int:
     """Download the template tarball and extract to *target_path*.
 
@@ -173,8 +166,6 @@ def _download_and_extract(tag: str, target_path: Path) -> int:
     Returns:
         0 on success, 1 on failure.
     """
-    import tempfile
-
     with tempfile.TemporaryDirectory() as tmpdir:
         tarball_dest = Path(tmpdir) / 'template.tar.gz'
 
@@ -399,10 +390,10 @@ def scaffold(
             return exc.code if isinstance(exc.code, int) else 1
 
     # Run init_project via bridge
-    if not run_init(target_path, effective_kwargs):
+    if not run_init(target_path, effective_kwargs, init_mod=init_mod):
         return _err('Project initialization failed')
 
-    print_step('Updating references')
+    print_step('Updated references')
 
     # Always: git init
     if not check_git_installed():
@@ -411,7 +402,7 @@ def scaffold(
     if rc != 0:
         return _err('git init failed')
 
-    print_step('Initializing git repository')
+    print_step('Initialized git repository')
 
     # Conditional: GitHub setup
     if github and github_owner is not None:
@@ -425,7 +416,7 @@ def scaffold(
         )
         if rc != 0:
             return rc
-        print_step('Creating GitHub repository')
+        print_step('Created GitHub repository')
 
     print_bar()
     print_outro('Done! Your package is ready.')

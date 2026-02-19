@@ -70,6 +70,7 @@ class TestRunInit:
         self,
         tmp_path: Path,
         mock_tarball: Callable[[str], Path],
+        capsys: pytest.CaptureFixture[str],
     ):
         tarball_path = mock_tarball('v1.5.0')
         from pypkgkit.scaffold import extract_tarball
@@ -120,3 +121,36 @@ class TestRunInit:
 
         result = run_init(template_dir, config_kwargs)
         assert result is False
+
+        captured = capsys.readouterr()
+        assert 'boom' in captured.err
+
+    def test_uses_preloaded_init_mod(
+        self,
+        tmp_path: Path,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that passing init_mod skips load_init_module."""
+        tarball_path = mock_tarball('v1.5.0')
+        from pypkgkit.init_bridge import load_init_module
+        from pypkgkit.scaffold import extract_tarball
+
+        dest = tmp_path / 'extracted'
+        dest.mkdir()
+        template_dir = extract_tarball(tarball_path, dest)
+
+        mod = load_init_module(template_dir)
+
+        config_kwargs = {
+            'name': 'my-pkg',
+            'author': 'Jane',
+            'email': 'j@e.com',
+            'github_owner': 'jane',
+            'description': 'A test project',
+            'license_key': 'mit',
+            'enable_pypi': False,
+        }
+
+        result = run_init(template_dir, config_kwargs, init_mod=mod)
+        assert result is True
+        assert (template_dir / '.initialized').read_text() == 'my-pkg'

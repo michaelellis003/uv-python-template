@@ -10,12 +10,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from pypkgkit.scaffold import REPO_NAME
+
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-
-REPO_OWNER = 'michaelellis003'
-REPO_NAME = 'uv-python-template'
 
 
 @pytest.fixture

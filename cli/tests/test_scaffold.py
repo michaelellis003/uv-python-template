@@ -10,6 +10,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pypkgkit.scaffold import (
+    REPO_NAME,
+    REPO_OWNER,
     download_tarball,
     extract_tarball,
     get_latest_release_tag,
@@ -20,10 +22,6 @@ from pypkgkit.scaffold import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-
-REPO_OWNER = 'michaelellis003'
-REPO_NAME = 'uv-python-template'
 
 _FULL_CONFIG = {
     'name': 'my-pkg',

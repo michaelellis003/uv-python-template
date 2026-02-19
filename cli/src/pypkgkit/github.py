@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
+from pypkgkit._util import err
+
 _RULESET_NAME = 'main branch protection'
+_GITHUB_ADMIN_ROLE_ID = 5
 
 
 def check_git_installed() -> bool:
@@ -48,11 +50,14 @@ def check_gh_authenticated() -> bool:
     Returns:
         True if gh auth status succeeds.
     """
-    result = subprocess.run(
-        ['gh', 'auth', 'status'],
-        capture_output=True,
-    )
-    return result.returncode == 0
+    try:
+        result = subprocess.run(
+            ['gh', 'auth', 'status'],
+            capture_output=True,
+        )
+        return result.returncode == 0
+    except FileNotFoundError:
+        return False
 
 
 def detect_gh_owner() -> str | None:
@@ -174,7 +179,7 @@ def _build_ruleset_payload(*, require_reviews: int = 0) -> dict:
         },
         'bypass_actors': [
             {
-                'actor_id': 5,
+                'actor_id': _GITHUB_ADMIN_ROLE_ID,
                 'actor_type': 'RepositoryRole',
                 'bypass_mode': 'always',
             }
@@ -255,19 +260,6 @@ def setup_ruleset(*, owner: str, name: str, require_reviews: int = 0) -> int:
     return result.returncode
 
 
-def _err(msg: str) -> int:
-    """Print an error message and return 1.
-
-    Args:
-        msg: Error message.
-
-    Returns:
-        Always returns 1.
-    """
-    print(f'error: {msg}', file=sys.stderr)
-    return 1
-
-
 def setup_github(
     project_dir: Path,
     *,
@@ -278,6 +270,9 @@ def setup_github(
     require_reviews: int = 0,
 ) -> int:
     """Full GitHub pipeline: create repo, push, configure rulesets.
+
+    Called from ``scaffold()`` which already verifies that ``gh`` is
+    installed and authenticated, so this function skips those checks.
 
     Args:
         project_dir: Path to the project directory.
@@ -290,14 +285,6 @@ def setup_github(
     Returns:
         0 on success, non-zero on failure.
     """
-    if not check_gh_installed():
-        return _err(
-            'gh CLI is not installed. Install from https://cli.github.com'
-        )
-
-    if not check_gh_authenticated():
-        return _err('gh is not authenticated. Run: gh auth login')
-
     print('Creating GitHub repository...')
     rc = create_github_repo(
         project_dir,
@@ -307,12 +294,12 @@ def setup_github(
         private=private,
     )
     if rc != 0:
-        return _err('Failed to create GitHub repository')
+        return err('Failed to create GitHub repository')
 
     print('Pushing to GitHub...')
     rc = git_push(project_dir)
     if rc != 0:
-        return _err('Failed to push to GitHub')
+        return err('Failed to push to GitHub')
 
     print('Configuring branch protection rulesets...')
     rc = setup_ruleset(
@@ -321,7 +308,7 @@ def setup_github(
         require_reviews=require_reviews,
     )
     if rc != 0:
-        return _err('Failed to configure rulesets')
+        return err('Failed to configure rulesets')
 
     visibility = 'private' if private else 'public'
     print(f'Done! Repository {owner}/{repo_name} ({visibility}) is ready.')

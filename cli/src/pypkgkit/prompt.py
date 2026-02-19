@@ -188,11 +188,6 @@ def print_warning(text: str) -> None:
     print(f'{_c(_DIM, _BAR)}  {_c(_YELLOW, _WARNING)} {_c(_YELLOW, text)}')
 
 
-def print_rule() -> None:
-    """Print a horizontal rule (calls divider)."""
-    print_divider()
-
-
 def print_next_steps(items: list[str]) -> None:
     """Print numbered next-steps after the outro.
 

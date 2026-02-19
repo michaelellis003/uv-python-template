@@ -21,9 +21,9 @@ class TestParseArgs:
         assert ns.command == 'new'
         assert ns.project_dir == 'my-project'
 
-    def test_version_flag(self):
-        ns = parse_args(['--version'])
-        assert ns.version is True
+    def test_version_flag_exits(self):
+        with pytest.raises(SystemExit, match='0'):
+            parse_args(['--version'])
 
     def test_new_with_all_flags(self):
         ns = parse_args(

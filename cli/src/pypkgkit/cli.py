@@ -25,9 +25,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         '--version',
-        action='store_true',
-        default=False,
-        help='Show version and exit',
+        action='version',
+        version=f'%(prog)s {__version__}',
     )
 
     sub = parser.add_subparsers(dest='command')
@@ -84,7 +83,7 @@ _CONFIG_FIELDS = (
 )
 
 
-def _collect_config_kwargs(ns: argparse.Namespace) -> dict:
+def _collect_config_kwargs(ns: argparse.Namespace) -> dict[str, object]:
     """Extract init config fields from parsed namespace.
 
     Args:
@@ -93,7 +92,7 @@ def _collect_config_kwargs(ns: argparse.Namespace) -> dict:
     Returns:
         Dict of config kwargs. Missing fields have None values.
     """
-    kwargs: dict = {}
+    kwargs: dict[str, object] = {}
     for field in _CONFIG_FIELDS:
         kwargs[field] = getattr(ns, field, None)
 
@@ -130,28 +129,23 @@ def main(argv: list[str] | None = None) -> int:
     """
     ns = parse_args(argv)
 
-    if ns.version:
-        print(f'pypkgkit {__version__}')
-        return 0
-
     if ns.command != 'new':
         parse_args(['--help'])
         return 1  # pragma: no cover
 
     config_kwargs = _collect_config_kwargs(ns)
     interactive = _needs_interactive(config_kwargs) and is_interactive()
-    template_version = getattr(ns, 'template_version', None)
 
     return scaffold(
         ns.project_dir,
-        template_version=template_version,
+        template_version=ns.template_version,
         config_kwargs=config_kwargs,
         interactive=interactive,
-        github=getattr(ns, 'github', False),
-        github_owner=getattr(ns, 'github_owner', None),
-        private=getattr(ns, 'private', False),
-        require_reviews=getattr(ns, 'require_reviews', 0),
-        description=getattr(ns, 'description', '') or '',
+        github=ns.github,
+        github_owner=ns.github_owner,
+        private=ns.private,
+        require_reviews=ns.require_reviews,
+        description=ns.description or '',
     )
 
 

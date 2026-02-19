@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from pypkgkit.github import (
+    _GITHUB_ADMIN_ROLE_ID,
     _build_ruleset_payload,
     check_gh_authenticated,
     check_gh_installed,
@@ -88,6 +89,14 @@ class TestCheckGhAuthenticated:
         with patch(
             'pypkgkit.github.subprocess.run',
             return_value=mock_result,
+        ):
+            assert check_gh_authenticated() is False
+
+    def test_returns_false_when_gh_not_found(self):
+        """Test that False is returned when gh binary is missing."""
+        with patch(
+            'pypkgkit.github.subprocess.run',
+            side_effect=FileNotFoundError,
         ):
             assert check_gh_authenticated() is False
 
@@ -287,7 +296,7 @@ class TestBuildRulesetPayload:
         payload = _build_ruleset_payload()
         actors = payload['bypass_actors']
         assert len(actors) == 1
-        assert actors[0]['actor_id'] == 5
+        assert actors[0]['actor_id'] == _GITHUB_ADMIN_ROLE_ID
         assert actors[0]['actor_type'] == 'RepositoryRole'
 
     def test_rules_include_required_types(self):
@@ -380,19 +389,15 @@ class TestSetupRuleset:
 
 
 class TestSetupGithub:
-    """Test setup_github orchestrator."""
+    """Test setup_github orchestrator.
+
+    Note: ``setup_github`` no longer checks ``check_gh_installed`` or
+    ``check_gh_authenticated`` — those guards live in ``scaffold()``.
+    """
 
     def test_full_pipeline_succeeds(self, tmp_path: Path):
         """Test full GitHub setup pipeline."""
         with (
-            patch(
-                'pypkgkit.github.check_gh_installed',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.check_gh_authenticated',
-                return_value=True,
-            ),
             patch(
                 'pypkgkit.github.create_github_repo',
                 return_value=0,
@@ -404,47 +409,11 @@ class TestSetupGithub:
 
         assert rc == 0
 
-    def test_fails_when_gh_not_installed(self, tmp_path: Path):
-        """Test early failure when gh is missing."""
-        with patch(
-            'pypkgkit.github.check_gh_installed',
-            return_value=False,
-        ):
-            rc = setup_github(tmp_path, owner='jane', repo_name='my-project')
-
-        assert rc != 0
-
-    def test_fails_when_gh_not_authenticated(self, tmp_path: Path):
-        """Test early failure when gh is not authenticated."""
-        with (
-            patch(
-                'pypkgkit.github.check_gh_installed',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.check_gh_authenticated',
-                return_value=False,
-            ),
-        ):
-            rc = setup_github(tmp_path, owner='jane', repo_name='my-project')
-
-        assert rc != 0
-
     def test_fails_when_repo_creation_fails(self, tmp_path: Path):
         """Test failure when repo creation fails."""
-        with (
-            patch(
-                'pypkgkit.github.check_gh_installed',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.check_gh_authenticated',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.create_github_repo',
-                return_value=1,
-            ),
+        with patch(
+            'pypkgkit.github.create_github_repo',
+            return_value=1,
         ):
             rc = setup_github(tmp_path, owner='jane', repo_name='my-project')
 
@@ -453,14 +422,6 @@ class TestSetupGithub:
     def test_fails_when_push_fails(self, tmp_path: Path):
         """Test failure when git push fails."""
         with (
-            patch(
-                'pypkgkit.github.check_gh_installed',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.check_gh_authenticated',
-                return_value=True,
-            ),
             patch(
                 'pypkgkit.github.create_github_repo',
                 return_value=0,
@@ -474,14 +435,6 @@ class TestSetupGithub:
     def test_passes_options_through(self, tmp_path: Path):
         """Test that private, description, reviews are passed."""
         with (
-            patch(
-                'pypkgkit.github.check_gh_installed',
-                return_value=True,
-            ),
-            patch(
-                'pypkgkit.github.check_gh_authenticated',
-                return_value=True,
-            ),
             patch(
                 'pypkgkit.github.create_github_repo',
                 return_value=0,

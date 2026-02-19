@@ -16,7 +16,6 @@ from pypkgkit.prompt import (
     print_intro,
     print_next_steps,
     print_outro,
-    print_rule,
     print_step,
     print_success,
     print_warning,
@@ -173,13 +172,6 @@ class TestPrintHelpers:
             print_success('All done')
         out = capsys.readouterr().out
         assert 'All done' in out
-
-    def test_print_rule_calls_divider(self, capsys):
-        with _no_color():
-            print_rule()
-        out = capsys.readouterr().out
-        assert '\u251c' in out  # ├
-        assert '\u2500' in out  # ─
 
 
 # -------------------------------------------------------------------
