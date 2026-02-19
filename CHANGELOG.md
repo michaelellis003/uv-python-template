@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.10.2 (2026-02-19)
+
+### Bug Fixes
+
+- **cli**: Surface subprocess stderr, add debug tracebacks, boost coverage
+  ([#35](https://github.com/michaelellis003/uv-python-template/pull/35),
+  [`49a4caa`](https://github.com/michaelellis003/uv-python-template/commit/49a4caa9f0cef400512d0a9a76e2468ca3817ca1))
+
+
 ## v1.10.1 (2026-02-19)
 
 ### Bug Fixes
