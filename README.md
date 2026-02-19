@@ -144,6 +144,28 @@ uv run --group docs mkdocs build --strict     # Build static site
 
 Docs deploy to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) automatically on push to `main`. Enable it under **Settings > Pages > Source: GitHub Actions**.
 
+## Claude Code
+
+The template includes a full [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration in `.claude/` so the AI assistant understands the project's conventions -- TDD workflow, code style, commit format, and more -- out of the box.
+
+### Slash commands
+
+| Command | What it does |
+|---------|--------------|
+| `/tdd` | Run a Red-Green-Refactor cycle for a feature or fix |
+| `/commit` | Create a conventional commit with quality gates |
+| `/pr` | Open a pull request with structured summary and test plan |
+| `/branch` | Create a feature branch from the latest main |
+| `/lint` | Run all quality checks (format, lint, type check, tests) |
+| `/issue` | Scaffold a GitHub issue with Given/When/Then criteria |
+
+### What's configured
+
+- **Rules** -- TDD workflow, code style (79-char lines, Google docstrings), design principles (KISS, YAGNI, SOLID), error handling (EAFP, guard clauses), git conventions, Python idioms, and testing standards.
+- **Hooks** -- auto-format and lint Python files after edits, pre-push quality gate before `git push`, file protection for `.env` and `uv.lock`, and a test summary on session stop.
+- **Agents** -- a code-reviewer for PR-style feedback and a test-writer that follows TDD principles.
+- **CLAUDE.md** -- the central instruction file that ties it all together.
+
 ## Push and review
 
 ### What CI checks
