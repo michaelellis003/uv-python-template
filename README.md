@@ -9,47 +9,31 @@
 
 A production-ready template for starting new Python packages. Clone it, rename a few things, and start building — dependency management, linting, type checking, testing, and CI/CD are already wired up.
 
-## Table of Contents
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Customizing the Template](#customizing-the-template)
-- [Development Workflow](#development-workflow)
-- [Using uv](#using-uv)
-- [Documentation](#documentation)
-- [CI/CD Workflows](#cicd-workflows)
-- [Project Structure](#project-structure)
-
-## Features
-- [uv](https://docs.astral.sh/uv/) for fast Python package management, virtual environments, and lockfile resolution.
-- [Pre-commit hooks](https://pre-commit.com) to enforce consistent code quality on every commit:
-    - [Ruff](https://docs.astral.sh/ruff/) for linting and formatting,
-    - [Pyright](https://github.com/microsoft/pyright) for static type checking.
-- [Pytest](https://docs.pytest.org/en/stable/) with [pytest-cov](https://pytest-cov.readthedocs.io/) for testing and coverage.
-- **GitHub Actions** CI/CD — lint, test across Python 3.10–3.13, and auto-release on merge to main.
-- **TDD-first development lifecycle** with Claude Code configuration for AI-assisted development.
-
 <!-- TEMPLATE-ONLY-START -->
-## Quick Start with pypkgkit
+## Demo
 
-The fastest way to scaffold a new project:
+From zero to a working, tested, CI-enabled Python package:
 
 ```bash
-# One command — downloads the template, runs init interactively
-uvx pypkgkit new my-project
-
-# Non-interactive
 uvx pypkgkit new my-project \
     --name my-pkg --author "Jane Smith" --email jane@example.com \
     --github-owner janesmith --description "My awesome package" --license mit
+cd my-project
+uv sync
+uv run pytest -v --cov
 ```
 
-## Getting Started
+That's it. You have a package with Ruff linting, Pyright type checking, pytest with coverage, pre-commit hooks, GitHub Actions CI across Python 3.10--3.13, semantic versioning, and MkDocs documentation -- all configured and ready to go.
+
+## Create your project
 
 ### Prerequisites
-- Python 3.10+ (uv will download it automatically if missing)
+
+- Python 3.10+ (uv will download it if missing)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
-Install uv:
+Install uv if you don't have it:
+
 ```bash
 # macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -58,297 +42,212 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-### Create a New Project from This Template
+### Option A: pypkgkit (one command)
 
-1. Click **"Use this template"** on GitHub (or clone the repo directly):
-    ```bash
-    git clone https://github.com/michaelellis003/uv-python-template.git my-project
-    cd my-project
-    rm -rf .git && git init
-    ```
-
-2. Run the setup script to rename the package and configure your project:
-    ```bash
-    uv run --script ./scripts/init.py
-    ```
-    This will prompt you for your package name, author info, and GitHub details, then update all references across the codebase automatically.
-
-    For non-interactive usage, pass all values as flags:
-    ```bash
-    uv run --script ./scripts/init.py --name my-pkg --author "Jane Smith" \
-        --email jane@example.com --github-owner janesmith \
-        --description "My awesome package" --license mit
-    ```
-
-3. Install dependencies:
-    ```bash
-    uv sync
-    ```
-
-4. Enable pre-commit hooks:
-    ```bash
-    uv run pre-commit install
-    ```
-
-5. Run the tests to verify everything works:
-    ```bash
-    uv run pytest -v --durations=0 --cov
-    ```
-
-6. Configure branch protection (requires `gh` CLI and repo admin access):
-    ```bash
-    ./scripts/setup-repo.sh
-    ```
-    This enables required CI status checks on `main`, which is needed for Dependabot auto-merge to work correctly.
-
-## Customizing the Template
-
-The fastest way to set up your project is to run the interactive init script:
+The fastest way. Downloads the latest template, runs init, and sets up git:
 
 ```bash
-uv run --script ./scripts/init.py
+uvx pypkgkit new my-project
 ```
 
-This handles the package rename, author info, GitHub URLs, version reset, and changelog reset automatically. After running it, the only manual steps remaining are:
+Pass `--github` to also create a GitHub repo, push, and configure branch protection (requires [gh CLI](https://cli.github.com)):
 
-| What to do | Where |
-|------------|-------|
-| Replace demo code | `<your_package>/main.py` — replace `hello`, `add`, `subtract`, `multiply` with your own code |
-| Update public API | `<your_package>/__init__.py` — update `__all__` and imports |
-| Update tests | `tests/test_main.py` — replace demo tests with your own |
-| Set up Codecov | Add `CODECOV_TOKEN` secret in GitHub repo settings and add badge to `README.md` |
-| Update license | `LICENSE` — update copyright holder if needed |
-| Update Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
-| Enable GitHub Pages | Repo **Settings > Pages > Source**: select **GitHub Actions** |
-| Configure branch protection | Run `./scripts/setup-repo.sh` (requires `gh` CLI and admin access) |
-| Update keywords | `pyproject.toml` — `keywords` field (reset to empty by init script) |
-| (Optional) Add `RELEASE_TOKEN` secret | Create a fine-grained PAT with **Contents: read/write** and add it as a repo secret — release commits will then trigger downstream workflows (e.g. docs deploy). Without it, `GITHUB_TOKEN` is used automatically. |
+```bash
+uvx pypkgkit new my-project \
+    --name my-pkg --author "Jane Smith" --email jane@example.com \
+    --github --description "My awesome package" --license mit
+```
 
-<details>
-<summary>Manual setup (without init script)</summary>
+### Option B: Clone and init
 
-If you prefer to customize manually, update these references:
+```bash
+git clone https://github.com/michaelellis003/uv-python-template.git my-project
+cd my-project
+rm -rf .git && git init
+```
 
-| What to change | Where |
-|----------------|-------|
-| Package name, version, author | `pyproject.toml` — `[project]` table |
-| Package source directory | Rename `python_package_template/` to your package name |
-| Public API exports | `<your_package>/__init__.py` — update `__all__` and the `version()` call |
-| Test imports | `tests/test_main.py` and `tests/test_init.py` — update imports |
-| README badges & description | `README.md` — replace repo URLs and badge tokens |
-| License | `LICENSE` — update copyright holder if needed |
-| Python versions | `requires-python` in `pyproject.toml` and matrix in `.github/workflows/ci.yml` |
-| Semantic release package name | `pyproject.toml` — `[tool.semantic_release]` update `--upgrade-package` in `build_command` |
-| Codecov token | Add `CODECOV_TOKEN` secret in your GitHub repo settings |
-| Enable GitHub Pages | Repo **Settings > Pages > Source**: select **GitHub Actions** |
-| Branch protection | Run `./scripts/setup-repo.sh` or manually enable on `main` with required checks |
+Then run the init script. It renames the package directory, updates all references, resets the version and changelog, and optionally configures your license:
 
-</details>
+```bash
+# Interactive -- prompts for everything
+uv run --script ./scripts/init.py
 
-The demo functions (`hello`, `add`, `subtract`, `multiply`) are provided as working examples of the TDD workflow. Replace them with your own code.
+# Non-interactive -- pass all values as flags
+uv run --script ./scripts/init.py \
+    --name my-pkg --author "Jane Smith" --email jane@example.com \
+    --github-owner janesmith --description "My awesome package" --license mit
+```
+
+### init.py flags
+
+| Flag | Description |
+|------|-------------|
+| `--name`, `-n` | Package name (kebab-case) |
+| `--author` | Author name |
+| `--email` | Author email |
+| `--github-owner` | GitHub username or organization |
+| `--description` | Short project description |
+| `--license` | License key (e.g. `mit`, `bsd-3-clause`, `gpl-3.0`, `apache-2.0`) |
+| `--pypi` | Enable PyPI publishing in the release workflow |
+
+### After init
+
+Install dependencies, enable pre-commit hooks, and verify:
+
+```bash
+uv sync
+uv run pre-commit install
+uv run pytest -v --durations=0 --cov
+```
 <!-- TEMPLATE-ONLY-END -->
 
-## Development Workflow
+## Write your code
 
-This project follows a strict TDD-first lifecycle:
+The demo functions (`hello`, `add`, `subtract`, `multiply`) in `python_package_template/main.py` show the TDD workflow in action. Replace them with your own code, update `__init__.py` exports, and rewrite the tests in `tests/test_main.py`.
 
-1. **Define** — create an issue with Given/When/Then acceptance criteria
-2. **Branch** — `<type>/<issue-id>-<short-description>` from `main`
-3. **RED** — write one failing test
-4. **GREEN** — write the minimum code to pass
-5. **REFACTOR** — clean up while tests stay green
-6. **COMMIT** — `<type>(<scope>): <description>` (Conventional Commits)
-7. **Repeat** steps 3–6 until acceptance criteria are met
-8. **DOCS** — update documentation to reflect any user-facing changes
-9. **PUSH** — run `uv run pre-commit run --all-files` before pushing
-10. **PR** — self-review, open PR (target < 400 lines), request review
-11. **CI** — parallel: ruff lint, ruff format, pyright, test matrix
-12. **MERGE** — squash and merge to main
-13. **RELEASE** — `python-semantic-release` auto-bumps version, tags, and creates a GitHub Release based on conventional commit messages
-
-## Using uv
-
-For the full uv documentation, visit the [full docs](https://docs.astral.sh/uv/).
-
-### Quick Reference
+### Adding dependencies
 
 ```bash
-uv sync                                      # Install all dependencies
-uv run pytest -v --durations=0 --cov         # Run tests with coverage
-uv run pre-commit run --all-files            # Run all quality checks
-uv run ruff check . --fix                    # Lint (with auto-fix)
-uv run ruff format .                         # Format code
-uv run pyright                               # Type check
-uv run --group docs mkdocs serve             # Local docs preview
-uv run --group docs mkdocs build --strict    # Build docs
+uv add requests                  # Runtime dependency
+uv add --dev pytest-mock         # Dev dependency
+uv add --group docs sphinx       # Named group (e.g. docs)
 ```
 
-### Managing Dependencies
-
-- **Add a runtime dependency:**
-    ```bash
-    uv add requests
-    ```
-    Updates `[project.dependencies]` in `pyproject.toml` and syncs your environment.
-
-- **Add a dev dependency:**
-    ```bash
-    uv add --dev pytest-mock
-    ```
-    Updates `[dependency-groups]` in `pyproject.toml`.
-
-- **Add to a named group:**
-    ```bash
-    uv add --group docs sphinx
-    ```
-
-- **Remove a dependency:**
-    ```bash
-    uv remove requests
-    ```
-
-Read more about [dependency management in uv](https://docs.astral.sh/uv/concepts/projects/dependencies/).
-
-### Versioning (Automated)
-
-Version bumping is handled automatically by `python-semantic-release` on merge to main. It reads conventional commit messages to determine the bump type: `feat:` triggers a minor bump, `fix:`/`perf:` triggers a patch bump, and `feat!:`/`BREAKING CHANGE` triggers a major bump. Do not manually bump the version in `pyproject.toml`.
-
-## Documentation
-
-This project uses [MkDocs](https://www.mkdocs.org/) with the [Material](https://squidfunk.github.io/mkdocs-material/) theme for documentation. API reference is auto-generated from Google-style docstrings using [mkdocstrings](https://mkdocstrings.github.io/).
+### Running tests
 
 ```bash
-uv run --group docs mkdocs serve             # Preview at http://127.0.0.1:8000
-uv run --group docs mkdocs build --strict    # Build static site
+uv run pytest -v --durations=0 --cov
 ```
 
-Documentation is automatically deployed to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) on every push to `main`.
+### Linting and formatting
 
-To enable GitHub Pages for your repository:
-
-1. Go to **Settings > Pages**
-2. Under **Build and deployment > Source**, select **GitHub Actions**
-3. Push to `main` — the `docs.yml` workflow will build and deploy automatically
-
-## CI/CD Workflows
-
-### On Pull Request and Push to Main (`ci.yml`)
-
-Runs parallel jobs for fast feedback:
-- **Ruff Lint** — checks for code quality issues
-- **Ruff Format** — verifies consistent code formatting
-- **Pyright** — static type checking
-- **Pytest** — runs tests across Python 3.10, 3.11, 3.12, and 3.13
-- **Coverage** — enforces minimum code coverage (`fail_under` in `pyproject.toml`) and uploads to Codecov
-- **Lock Check** — verifies `uv.lock` is in sync with `pyproject.toml`
-- **Pytest macOS** — smoke test on macOS to catch platform-specific issues
-- **Pytest Windows** — smoke test on Windows to catch platform-specific issues
-- **Build** — builds sdist + wheel, validates metadata with `twine check`, and verifies the wheel installs and imports correctly
-- **CI Pass** — gate job that requires all of the above to succeed; this is the single check referenced by branch protection
-
-### On Merge to Main (`release.yml`)
-
-- **Versioning** — `python-semantic-release` reads conventional commits and bumps the version automatically
-- **Tagging** — creates a git tag for the new version
-- **Building** — runs `uv build` to produce sdist and wheel
-- **Releasing** — creates a GitHub Release with the built artifacts and release notes
-- **Publishing** — (optional) publishes to PyPI with trusted publishing and build attestations
-
-> **Release token:** The workflow works out of the box using the default
-> `GITHUB_TOKEN`. However, commits created by `github-actions[bot]` do
-> not trigger other workflows (e.g. docs deploy). To enable that, create
-> a fine-grained PAT with **Contents: read/write** and add it as a
-> repository secret named `RELEASE_TOKEN`.
-
-### On Manual Trigger (`test-publish.yml`)
-
-- **Build** — builds and validates the package
-- **Publish** — (optional) publishes to TestPyPI for pre-release validation
-
-### On Merge to Main (`docs.yml`)
-
-- **Build** — runs `mkdocs build --strict` to generate static documentation
-- **Deploy** — publishes to GitHub Pages using artifact-based deployment
-
-### On Push to Main and Pull Request (`e2e.yml`)
-
-Docker-based end-to-end tests that verify `init.py` works correctly across multiple Python versions and license configurations. Run locally with:
+Run everything at once (same checks as CI):
 
 ```bash
-./tests/e2e/run-e2e.sh          # Full matrix
-./tests/e2e/run-e2e.sh --quick  # python:3.13-slim only
+uv run pre-commit run --all-files
 ```
 
-### Publishing Your Package
+Or individually:
 
-The template supports publishing to **PyPI**, **TestPyPI**, and **conda-forge**. See the full [Publishing Guide](https://michaelellis003.github.io/uv-python-template/publishing/) for detailed instructions.
+```bash
+uv run ruff check . --fix        # Lint with auto-fix
+uv run ruff format .             # Format
+uv run pyright                   # Type check
+```
 
-**Quick setup (PyPI):**
+### Docs
+
+```bash
+uv run --group docs mkdocs serve              # Preview at http://127.0.0.1:8000
+uv run --group docs mkdocs build --strict     # Build static site
+```
+
+Docs deploy to [GitHub Pages](https://michaelellis003.github.io/uv-python-template/) automatically on push to `main`. Enable it under **Settings > Pages > Source: GitHub Actions**.
+
+## Push and review
+
+### What CI checks
+
+On every PR and push to `main`, CI runs these checks in parallel: Ruff lint, Ruff format, Pyright, pytest across Python 3.10--3.13, coverage enforcement, lockfile sync, macOS and Windows smoke tests, and build validation (sdist + wheel + twine check + install test). All must pass before merging.
+
+### Conventional commits
+
+Commit messages drive automatic versioning. Use the format `<type>(<scope>): <description>`:
+
+- `feat:` -- minor version bump (0.3.0 -> 0.4.0)
+- `fix:` / `perf:` -- patch bump (0.3.0 -> 0.3.1)
+- `feat!:` or `BREAKING CHANGE` footer -- major bump (0.3.0 -> 1.0.0)
+- `test:`, `refactor:`, `docs:`, `chore:`, `ci:` -- no version bump
+
+### Branch naming
+
+```
+<type>/<issue-id>-<short-description>
+```
+
+For example: `feat/AUTH-42-jwt-refresh-rotation`, `fix/API-118-null-pointer`.
+
+## Ship it
+
+### Automatic releases
+
+When you merge to `main`, [python-semantic-release](https://python-semantic-release.readthedocs.io/) reads your commit messages, bumps the version in `pyproject.toml`, creates a git tag, and publishes a GitHub Release with built artifacts. No manual steps needed.
+
+### PyPI publishing
+
+To publish to PyPI automatically on each release:
 
 1. Run `uv run --script ./scripts/init.py --pypi` to enable publishing (or uncomment the `PYPI-START`/`PYPI-END` block in `release.yml` manually).
-2. Add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on pypi.org for this repository (workflow: `release.yml`).
+2. Add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on pypi.org for your repo (workflow: `release.yml`).
 3. Every merge to `main` with a `feat:` or `fix:` commit will auto-publish.
 
-**TestPyPI** — a manual `test-publish.yml` workflow is included for validating your publishing pipeline before going live.
+A manual **test-publish.yml** workflow is included for validating your pipeline against [TestPyPI](https://test.pypi.org) first. A conda-forge recipe skeleton lives in `recipe/meta.yaml`, ready to submit to [staged-recipes](https://github.com/conda-forge/staged-recipes) once your package is on PyPI. See the full [Publishing Guide](https://michaelellis003.github.io/uv-python-template/publishing/) for details.
 
-**conda-forge** — a recipe skeleton in `recipe/meta.yaml` is ready to submit to [conda-forge/staged-recipes](https://github.com/conda-forge/staged-recipes) once your package is on PyPI.
+### RELEASE_TOKEN
 
-## Project Structure
+The release workflow works out of the box with the default `GITHUB_TOKEN`. However, commits made by `github-actions[bot]` don't trigger downstream workflows (like docs deploy). To fix that, create a fine-grained PAT with **Contents: read/write** and add it as a repo secret named `RELEASE_TOKEN`.
+
+<!-- TEMPLATE-ONLY-START -->
+## After initialization
+
+These are the manual steps that remain after running init:
+
+| Step | Details |
+|------|---------|
+| Replace demo code | Swap out `hello`/`add`/`subtract`/`multiply` in your package's `main.py` |
+| Set up Codecov | Add `CODECOV_TOKEN` secret in repo settings, update the badge URL in README |
+| Enable GitHub Pages | **Settings > Pages > Source: GitHub Actions** |
+| Branch protection | Run `./scripts/setup-repo.sh` (requires `gh` CLI and admin access) |
+| Update keywords | Fill in `keywords = []` in `pyproject.toml` |
+| Add `RELEASE_TOKEN` (optional) | Fine-grained PAT with Contents: read/write, added as a repo secret |
+<!-- TEMPLATE-ONLY-END -->
+
+<details>
+<summary>Project structure</summary>
 
 ```
-├── python_package_template/         # Package source (rename this)
-│   ├── __init__.py                  # Public API exports + __version__
-│   ├── __main__.py                  # python -m entry point
-│   ├── main.py                     # Core module with demo functions
-│   └── py.typed                    # PEP 561 type checking marker
-├── tests/
-│   ├── conftest.py                 # Shared test fixtures
-│   ├── test_init.py                # Package-level tests
-│   ├── test_main.py                # Unit tests for demo functions
-│   ├── test_main_module.py         # Tests for __main__.py entry point
-│   └── template/                   # Template tests (removed by init.py)
-│       ├── test_template_structure.py  # Verifies template ships clean
-│       └── test_init_license.py        # Integration tests for init.py
-├── docs/
-│   ├── index.md                    # Documentation landing page
-│   ├── api.md                      # Auto-generated API reference
-│   └── publishing.md               # PyPI, TestPyPI, and conda-forge guide
-├── .github/
-│   ├── actions/setup-uv/           # Reusable CI composite action
-│   ├── CODEOWNERS                  # Default code ownership for reviews
-│   ├── dependabot.yml              # Automated dependency updates
-│   ├── ISSUE_TEMPLATE/             # Bug report & feature request forms
-│   ├── PULL_REQUEST_TEMPLATE.md    # PR checklist template
-│   └── workflows/
-│       ├── ci.yml                  # CI: parallel lint, format, typecheck, test matrix
-│       ├── dependabot-auto-merge.yml  # Auto-merge minor/patch Dependabot PRs
-│       ├── docs.yml                # Docs: build and deploy to GitHub Pages
-│       ├── release.yml             # Gated on CI, auto-version + GitHub Release
-│       ├── test-publish.yml        # Manual TestPyPI publishing
-│       └── cli-release.yml         # CLI pypkgkit release workflow
-├── .claude/                         # Claude Code AI assistant config
-│   ├── settings.json               # Permissions, hooks
-│   ├── rules/                      # Development standards
-│   ├── skills/                     # Slash commands (/tdd, /commit, /pr, etc.)
-│   └── agents/                     # Specialized subagents
-├── cli/                             # CLI pypkgkit package (removed by init.py)
-│   ├── pyproject.toml              # pypkgkit package config
-│   ├── src/pypkgkit/               # CLI source code
-│   └── tests/                      # CLI tests
-├── recipe/
-│   └── meta.yaml                   # conda-forge recipe skeleton
-├── scripts/
-│   ├── init.py                     # Interactive template initialization
-│   └── setup-repo.sh               # One-time repo setup (branch protection)
-├── .editorconfig                   # Editor settings for non-Python files
-├── .gitignore                      # Git ignore rules
-├── .pre-commit-config.yaml         # Pre-commit hook definitions
-├── mkdocs.yml                      # MkDocs documentation config
-├── pyproject.toml                  # Project config, deps, tool settings
-├── uv.lock                        # Locked dependency versions
-├── CHANGELOG.md                   # Release history
-├── CONTRIBUTING.md                # Contribution guidelines
-├── LICENSE                        # Apache-2.0 license (configurable via init.py)
-├── README.md                      # This file
-└── SECURITY.md                    # Security policy
+python_package_template/         # Package source (rename this)
+  __init__.py                    # Public API exports + __version__
+  __main__.py                    # python -m entry point
+  main.py                       # Core module with demo functions
+  py.typed                       # PEP 561 type checking marker
+tests/
+  conftest.py                    # Shared test fixtures
+  test_init.py                   # Package-level tests
+  test_main.py                   # Unit tests for demo functions
+  test_main_module.py            # Tests for __main__.py entry point
+  template/                      # Template tests (removed by init)
+    conftest.py                  # Fixtures: template_dir, init_project
+    test_template_structure.py   # Verifies template ships clean
+    test_init_license.py         # Integration tests for init license setup
+    test_init_flags.py           # Tests for flag validation and special chars
+  e2e/                           # Docker-based end-to-end tests
+    Dockerfile                   # Parameterized base image
+    verify-project.sh            # Container-side verification
+    run-e2e.sh                   # Host-side matrix runner
+docs/
+  index.md                       # Documentation landing page
+  api.md                         # Auto-generated API reference
+  publishing.md                  # PyPI, TestPyPI, and conda-forge guide
+.github/
+  actions/setup-uv/              # Reusable CI composite action
+  workflows/
+    ci.yml                       # Lint, format, typecheck, test matrix
+    release.yml                  # Auto-version + GitHub Release
+    docs.yml                     # Build and deploy to GitHub Pages
+    e2e.yml                      # Docker-based init verification
+    test-publish.yml             # Manual TestPyPI publishing
+    dependabot-auto-merge.yml    # Auto-merge minor/patch Dependabot PRs
+    cli-release.yml              # CLI pypkgkit release
+cli/                             # CLI pypkgkit package (removed by init)
+  src/pypkgkit/                  # CLI source code
+  tests/                         # CLI tests
+scripts/
+  init.py                        # Template initialization script
+  setup-repo.sh                  # Branch protection setup
+.pre-commit-config.yaml          # Pre-commit hook definitions
+pyproject.toml                   # Project config, deps, tool settings
+mkdocs.yml                       # MkDocs documentation config
 ```
+
+</details>
