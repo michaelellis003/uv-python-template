@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.10.0 (2026-02-19)
+
+### Documentation
+
+- **readme**: Add Claude Code section with slash commands and config overview
+  ([#32](https://github.com/michaelellis003/uv-python-template/pull/32),
+  [`964cb40`](https://github.com/michaelellis003/uv-python-template/commit/964cb4061424d3e8cbd08ba8e1430a7ef56549d4))
+
+- **readme**: Rewrite README around user lifecycle
+  ([#31](https://github.com/michaelellis003/uv-python-template/pull/31),
+  [`78c0f63`](https://github.com/michaelellis003/uv-python-template/commit/78c0f6320a07009dac5637e52a8abdcde5dd73b9))
+
+### Features
+
+- **cli**: Add Clack-style interactive UX with polished prompts
+  ([#33](https://github.com/michaelellis003/uv-python-template/pull/33),
+  [`043f3bd`](https://github.com/michaelellis003/uv-python-template/commit/043f3bdf5f8dd718a828ecb50ec57447edd31e49))
+
+
 ## v1.9.2 (2026-02-18)
 
 ### Bug Fixes
