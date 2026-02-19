@@ -4,12 +4,43 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
+from typing import Any
 
 from pypkgkit._util import err
 
 _RULESET_NAME = 'main branch protection'
 _GITHUB_ADMIN_ROLE_ID = 5
+
+
+def _run_cmd(
+    cmd: list[str], **kwargs: Any
+) -> subprocess.CompletedProcess[bytes]:
+    """Run a subprocess command and print stderr on failure.
+
+    Wraps ``subprocess.run`` with ``capture_output=True``. When the
+    process exits non-zero, any captured stderr is printed so the
+    user sees the actual error message.
+
+    Args:
+        cmd: Command and arguments.
+        **kwargs: Extra keyword arguments for ``subprocess.run``.
+
+    Returns:
+        The completed process result.
+    """
+    result = subprocess.run(cmd, capture_output=True, **kwargs)
+    if result.returncode != 0 and result.stderr:
+        stderr_text = (
+            result.stderr
+            if isinstance(result.stderr, str)
+            else result.stderr.decode(errors='replace')
+        )
+        msg = stderr_text.strip()
+        if msg:
+            print(msg, file=sys.stderr)
+    return result
 
 
 def check_git_installed() -> bool:
@@ -92,7 +123,7 @@ def git_init(project_dir: Path) -> int:
         ['git', 'commit', '-m', 'Initial commit from pypkgkit'],
     ]
     for cmd in commands:
-        result = subprocess.run(cmd, cwd=project_dir, capture_output=True)
+        result = _run_cmd(cmd, cwd=project_dir)
         if result.returncode != 0:
             return result.returncode
     return 0
@@ -107,10 +138,9 @@ def git_push(project_dir: Path) -> int:
     Returns:
         Process return code.
     """
-    result = subprocess.run(
+    result = _run_cmd(
         ['git', 'push', '-u', 'origin', 'main'],
         cwd=project_dir,
-        capture_output=True,
     )
     return result.returncode
 
@@ -145,15 +175,14 @@ def create_github_repo(
     if description:
         cmd.extend(['--description', description])
 
-    result = subprocess.run(cmd, cwd=project_dir, capture_output=True)
+    result = _run_cmd(cmd, cwd=project_dir)
     if result.returncode != 0:
         return result.returncode
 
     remote_url = f'https://github.com/{owner}/{name}.git'
-    result = subprocess.run(
+    result = _run_cmd(
         ['git', 'remote', 'add', 'origin', remote_url],
         cwd=project_dir,
-        capture_output=True,
     )
     return result.returncode
 
@@ -220,7 +249,7 @@ def setup_ruleset(*, owner: str, name: str, require_reviews: int = 0) -> int:
         0 on success, non-zero on failure.
     """
     # Check for existing ruleset
-    result = subprocess.run(
+    result = _run_cmd(
         [
             'gh',
             'api',
@@ -228,7 +257,6 @@ def setup_ruleset(*, owner: str, name: str, require_reviews: int = 0) -> int:
             '--jq',
             f'.[] | select(.name == "{_RULESET_NAME}") | .id',
         ],
-        capture_output=True,
         text=True,
     )
     existing_id = result.stdout.strip() if result.returncode == 0 else ''
@@ -243,7 +271,7 @@ def setup_ruleset(*, owner: str, name: str, require_reviews: int = 0) -> int:
         endpoint = f'repos/{owner}/{name}/rulesets'
         method = 'POST'
 
-    result = subprocess.run(
+    result = _run_cmd(
         [
             'gh',
             'api',
@@ -254,7 +282,6 @@ def setup_ruleset(*, owner: str, name: str, require_reviews: int = 0) -> int:
             '-',
         ],
         input=payload_json,
-        capture_output=True,
         text=True,
     )
     return result.returncode

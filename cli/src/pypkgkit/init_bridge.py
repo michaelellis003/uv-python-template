@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
+import traceback
 from pathlib import Path
 from types import ModuleType
 
@@ -63,4 +65,6 @@ def run_init(
         return mod.init_project(config, template_dir)
     except Exception as exc:
         print(f'error: {exc}', file=sys.stderr)  # noqa: T201
+        if os.environ.get('PYPKGKIT_DEBUG'):
+            traceback.print_exc(file=sys.stderr)
         return False

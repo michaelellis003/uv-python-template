@@ -5,9 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from pypkgkit.github import (
     _GITHUB_ADMIN_ROLE_ID,
     _build_ruleset_payload,
+    _run_cmd,
     check_gh_authenticated,
     check_gh_installed,
     check_git_installed,
@@ -465,3 +468,63 @@ class TestSetupGithub:
             name='my-project',
             require_reviews=2,
         )
+
+
+class TestRunCmd:
+    """Test _run_cmd stderr surfacing."""
+
+    def test_prints_stderr_on_failure(
+        self, capsys: pytest.CaptureFixture[str]
+    ):
+        """Test that stderr is printed when command fails."""
+        mock_result = MagicMock(
+            returncode=1, stderr=b'fatal: not a git repository'
+        )
+        with patch(
+            'pypkgkit.github.subprocess.run',
+            return_value=mock_result,
+        ):
+            result = _run_cmd(['git', 'status'])
+
+        assert result.returncode == 1
+        captured = capsys.readouterr()
+        assert 'fatal: not a git repository' in captured.err
+
+    def test_no_stderr_on_success(self, capsys: pytest.CaptureFixture[str]):
+        """Test that stderr is NOT printed on success."""
+        mock_result = MagicMock(returncode=0, stderr=b'some warning')
+        with patch(
+            'pypkgkit.github.subprocess.run',
+            return_value=mock_result,
+        ):
+            result = _run_cmd(['git', 'status'])
+
+        assert result.returncode == 0
+        captured = capsys.readouterr()
+        assert captured.err == ''
+
+    def test_empty_stderr_not_printed(
+        self, capsys: pytest.CaptureFixture[str]
+    ):
+        """Test that empty stderr is not printed."""
+        mock_result = MagicMock(returncode=1, stderr=b'   \n')
+        with patch(
+            'pypkgkit.github.subprocess.run',
+            return_value=mock_result,
+        ):
+            _run_cmd(['git', 'status'])
+
+        captured = capsys.readouterr()
+        assert captured.err == ''
+
+    def test_handles_str_stderr(self, capsys: pytest.CaptureFixture[str]):
+        """Test that string stderr is handled (text=True)."""
+        mock_result = MagicMock(returncode=1, stderr='permission denied')
+        with patch(
+            'pypkgkit.github.subprocess.run',
+            return_value=mock_result,
+        ):
+            _run_cmd(['gh', 'repo', 'create'], text=True)
+
+        captured = capsys.readouterr()
+        assert 'permission denied' in captured.err

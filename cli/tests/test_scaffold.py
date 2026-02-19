@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import io
 import tarfile
+from email.message import Message
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
+from urllib.error import HTTPError, URLError
 
 import pytest
 
 from pypkgkit.scaffold import (
     REPO_NAME,
     REPO_OWNER,
+    _download_and_extract,
+    _prompt_missing_config,
     download_tarball,
     extract_tarball,
     get_latest_release_tag,
@@ -562,3 +567,443 @@ class TestScaffold:
         assert result != 0
         captured = capsys.readouterr()
         assert 'initialization failed' in captured.err.lower()
+
+    def test_http_403_rate_limit_error(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test 403 rate-limit error shows helpful message."""
+        target = tmp_path / 'my-project'
+
+        exc = HTTPError(
+            'https://api.github.com/repos/x/y/releases/latest',
+            403,
+            'rate limit exceeded',
+            Message(),
+            None,
+        )
+        with patch(
+            'pypkgkit.scaffold.get_latest_release_tag',
+            side_effect=exc,
+        ):
+            result = scaffold(str(target))
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'rate limit' in captured.err.lower()
+
+    def test_non_403_http_error(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test non-403 HTTPError shows generic API error."""
+        target = tmp_path / 'my-project'
+
+        exc = HTTPError(
+            'https://api.github.com/repos/x/y/releases/latest',
+            500,
+            'Internal Server Error',
+            Message(),
+            None,
+        )
+        with patch(
+            'pypkgkit.scaffold.get_latest_release_tag',
+            side_effect=exc,
+        ):
+            result = scaffold(str(target))
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'api error' in captured.err.lower()
+
+    def test_gh_not_authenticated_returns_error(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test early failure when gh is not authenticated."""
+        target = tmp_path / 'my-project'
+
+        with (
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=False,
+            ),
+        ):
+            result = scaffold(str(target), github=True)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'not authenticated' in captured.err.lower()
+
+    def test_detect_gh_owner_returns_none(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test error when auto-detection of GitHub owner fails."""
+        target = tmp_path / 'my-project'
+
+        with (
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.detect_gh_owner',
+                return_value=None,
+            ),
+        ):
+            result = scaffold(str(target), github=True)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'github username' in captured.err.lower()
+
+    def test_git_not_installed_returns_error(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test error when git is not installed."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_urlopen = _mock_urlopen_factory(
+            mock_release_json, tarball_path.read_bytes()
+        )
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=False,
+            ),
+        ):
+            result = scaffold(str(target), config_kwargs=_FULL_CONFIG)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'git' in captured.err.lower()
+
+    def test_setup_github_failure_propagates(
+        self,
+        tmp_path: Path,
+        mock_release_json: bytes,
+        mock_tarball: Callable[[str], Path],
+    ):
+        """Test that setup_github failure propagates."""
+        tarball_path = mock_tarball('v1.5.0')
+        target = tmp_path / 'my-project'
+
+        mock_urlopen = _mock_urlopen_factory(
+            mock_release_json, tarball_path.read_bytes()
+        )
+
+        with (
+            patch(
+                'pypkgkit.scaffold.urlopen',
+                side_effect=mock_urlopen,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_git_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_installed',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.check_gh_authenticated',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.detect_gh_owner',
+                return_value='jane',
+            ),
+            patch('pypkgkit.scaffold.git_init', return_value=0),
+            patch(
+                'pypkgkit.scaffold.setup_github',
+                return_value=1,
+            ),
+        ):
+            result = scaffold(
+                str(target),
+                config_kwargs=_FULL_CONFIG,
+                github=True,
+            )
+
+        assert result != 0
+
+    def test_load_init_module_file_not_found(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test error when scripts/init.py is missing."""
+        target = tmp_path / 'my-project'
+        # Create a directory with no scripts/init.py
+        target.mkdir()
+        (target / 'pyproject.toml').write_text('[project]\n')
+
+        with patch(
+            'pypkgkit.scaffold._download_and_extract',
+            return_value=0,
+        ):
+            result = scaffold(str(target), config_kwargs=_FULL_CONFIG)
+
+        # target already exists, so it returns error
+        assert result != 0
+
+
+class TestExtractTarballEdgeCases:
+    """Test edge cases in extract_tarball."""
+
+    def test_zero_top_level_dirs_raises(self, tmp_path: Path):
+        """Test ValueError when archive has no directories."""
+        tarball_path = tmp_path / 'flat.tar.gz'
+        with tarfile.open(tarball_path, 'w:gz') as tf:
+            data = b'hello'
+            info = tarfile.TarInfo('file.txt')
+            info.size = len(data)
+            tf.addfile(info, io.BytesIO(data))
+
+        dest = tmp_path / 'extracted'
+        dest.mkdir()
+
+        with pytest.raises(ValueError, match='Expected 1 top-level'):
+            extract_tarball(tarball_path, dest)
+
+    def test_multiple_top_level_dirs_raises(self, tmp_path: Path):
+        """Test ValueError when archive has multiple top-level dirs."""
+        tarball_path = tmp_path / 'multi.tar.gz'
+        with tarfile.open(tarball_path, 'w:gz') as tf:
+            for name in ['dir_a/file.txt', 'dir_b/file.txt']:
+                data = b'content'
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                tf.addfile(info, io.BytesIO(data))
+
+        dest = tmp_path / 'extracted'
+        dest.mkdir()
+
+        with pytest.raises(ValueError, match='Expected 1 top-level'):
+            extract_tarball(tarball_path, dest)
+
+
+class TestDownloadAndExtract:
+    """Test _download_and_extract error paths."""
+
+    def test_os_error_during_download(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test OSError during download returns error."""
+        target = tmp_path / 'my-project'
+
+        with patch(
+            'pypkgkit.scaffold.download_tarball',
+            side_effect=OSError('disk full'),
+        ):
+            result = _download_and_extract('v1.0.0', target)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'download' in captured.err.lower()
+
+    def test_tar_error_during_extraction(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test TarError during extraction returns error."""
+        target = tmp_path / 'my-project'
+
+        with (
+            patch('pypkgkit.scaffold.download_tarball'),
+            patch(
+                'pypkgkit.scaffold.extract_tarball',
+                side_effect=tarfile.TarError('corrupt'),
+            ),
+        ):
+            result = _download_and_extract('v1.0.0', target)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'corrupt' in captured.err.lower()
+
+    def test_file_exists_error_during_move(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test FileExistsError during move returns error."""
+        target = tmp_path / 'my-project'
+
+        with (
+            patch('pypkgkit.scaffold.download_tarball'),
+            patch(
+                'pypkgkit.scaffold.extract_tarball',
+                return_value=tmp_path / 'inner',
+            ),
+            patch(
+                'pypkgkit.scaffold.move_template_to_target',
+                side_effect=FileExistsError('exists'),
+            ),
+        ):
+            result = _download_and_extract('v1.0.0', target)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'already exists' in captured.err.lower()
+
+    def test_url_error_during_download(
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
+        """Test URLError during download returns error."""
+        target = tmp_path / 'my-project'
+
+        with patch(
+            'pypkgkit.scaffold.download_tarball',
+            side_effect=URLError('connection refused'),
+        ):
+            result = _download_and_extract('v1.0.0', target)
+
+        assert result != 0
+        captured = capsys.readouterr()
+        assert 'download' in captured.err.lower()
+
+
+class TestPromptMissingConfig:
+    """Test _prompt_missing_config interactive paths."""
+
+    def _make_mock_init_mod(self):
+        """Create a mock init module with validators."""
+        mod = MagicMock()
+        mod.validate_name = MagicMock()
+        mod.validate_email = MagicMock()
+        mod.validate_author_name = MagicMock()
+        mod.validate_github_owner = MagicMock()
+        mod.validate_description = MagicMock()
+        mod.OFFLINE_LICENSES = []
+        return mod
+
+    def test_happy_path_all_prompts(self):
+        """Test that all prompts are called for empty config."""
+        mod = self._make_mock_init_mod()
+
+        with (
+            patch('pypkgkit.scaffold.print_welcome'),
+            patch('pypkgkit.scaffold.print_header'),
+            patch('pypkgkit.scaffold.print_divider'),
+            patch('pypkgkit.scaffold.print_field'),
+            patch('pypkgkit.scaffold.print_bar'),
+            patch(
+                'pypkgkit.scaffold.prompt_text',
+                side_effect=[
+                    'my-pkg',
+                    'Jane',
+                    'j@e.com',
+                    'jane',
+                    'A project',
+                ],
+            ),
+            patch(
+                'pypkgkit.scaffold.prompt_confirm',
+                side_effect=[False, True],
+            ),
+            patch(
+                'pypkgkit.scaffold.prompt_choice',
+                return_value=0,
+            ),
+        ):
+            result = _prompt_missing_config(mod, {}, 'my-pkg')
+
+        assert result['name'] == 'my-pkg'
+        assert result['author'] == 'Jane'
+        assert result['email'] == 'j@e.com'
+        assert result['github_owner'] == 'jane'
+        assert result['description'] == 'A project'
+        assert result['license_key'] == 'none'
+
+    def test_abort_on_decline(self):
+        """Test SystemExit when user declines confirmation."""
+        mod = self._make_mock_init_mod()
+
+        with (
+            patch('pypkgkit.scaffold.print_welcome'),
+            patch('pypkgkit.scaffold.print_header'),
+            patch('pypkgkit.scaffold.print_divider'),
+            patch('pypkgkit.scaffold.print_field'),
+            patch('pypkgkit.scaffold.print_bar'),
+            patch(
+                'pypkgkit.scaffold.prompt_text',
+                return_value='test',
+            ),
+            patch(
+                'pypkgkit.scaffold.prompt_confirm',
+                side_effect=[False, False],
+            ),
+            patch(
+                'pypkgkit.scaffold.prompt_choice',
+                return_value=0,
+            ),
+            pytest.raises(SystemExit),
+        ):
+            _prompt_missing_config(mod, {}, 'my-pkg')
+
+    def test_prefilled_fields_not_prompted(self):
+        """Test that prefilled fields skip prompts."""
+        mod = self._make_mock_init_mod()
+
+        prefilled = {
+            'name': 'my-pkg',
+            'author': 'Jane',
+            'email': 'j@e.com',
+            'github_owner': 'jane',
+            'description': 'A project',
+            'enable_pypi': False,
+            'license_key': 'mit',
+        }
+
+        with (
+            patch('pypkgkit.scaffold.print_welcome'),
+            patch('pypkgkit.scaffold.print_header'),
+            patch('pypkgkit.scaffold.print_divider'),
+            patch('pypkgkit.scaffold.print_field'),
+            patch('pypkgkit.scaffold.print_bar'),
+            patch(
+                'pypkgkit.scaffold.prompt_text',
+            ) as mock_text,
+            patch(
+                'pypkgkit.scaffold.prompt_confirm',
+                return_value=True,
+            ),
+            patch(
+                'pypkgkit.scaffold.prompt_choice',
+            ) as mock_choice,
+        ):
+            result = _prompt_missing_config(mod, prefilled, 'my-pkg')
+
+        # No prompts should have been called
+        mock_text.assert_not_called()
+        mock_choice.assert_not_called()
+        assert result['name'] == 'my-pkg'
