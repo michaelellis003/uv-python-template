@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.10.1 (2026-02-19)
+
+### Bug Fixes
+
+- **cli**: Address code review findings across pypkgkit
+  ([#34](https://github.com/michaelellis003/uv-python-template/pull/34),
+  [`8cb7ba0`](https://github.com/michaelellis003/uv-python-template/commit/8cb7ba0b1fdb9f9388bb69451ea3d0cf5f5074be))
+
+
 ## v1.10.0 (2026-02-19)
 
 ### Documentation

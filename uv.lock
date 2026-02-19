@@ -1000,7 +1000,7 @@ wheels = [
 
 [[package]]
 name = "python-package-template"
-version = "1.10.0"
+version = "1.10.1"
 source = { editable = "." }
 
 [package.dev-dependencies]
